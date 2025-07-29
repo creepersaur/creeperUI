@@ -8,7 +8,6 @@ use crate::ui::windows::window_handler::WindowHandler;
 #[macroquad::main("Hello")]
 async fn main() {
     let mut winhandler = WindowHandler::new().await;
-    let mut open = true;
     
     loop {
         set_mouse_cursor(CursorIcon::Default);
