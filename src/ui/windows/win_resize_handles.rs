@@ -11,11 +11,12 @@ pub enum ResizeAxis {
 }
 
 pub enum ResizeHandle {
-	Right, Bottom
+	Right, Bottom, Corner
 }
 
 pub struct WindowResizeHandles {
     pub thickness: f32,
+	pub corner_size: f32,
     pub resizing: Option<ResizeAxis>,
 	pub hovering_handle: Option<ResizeHandle>,
 	pub opacity: f32,
@@ -24,7 +25,8 @@ pub struct WindowResizeHandles {
 impl WindowResizeHandles {
     pub fn new() -> Self {
         Self {
-            thickness: 5.0,
+            thickness: 7.0,
+			corner_size: 12.0,
 			resizing: None,
 			hovering_handle: None,
 			opacity: 0.0,
@@ -64,6 +66,18 @@ impl WindowResizeHandles {
 				set_mouse_cursor(CursorIcon::NSResize);
 			}
 			
+			Some(ResizeHandle::Corner) => {
+				// CORNER HANDLE
+				draw_rectangle(
+					rect.x + rect.w - self.corner_size/2.0,
+					rect.y + rect.h - self.corner_size/2.0,
+					self.corner_size,
+					self.corner_size,
+					color,
+				);
+				set_mouse_cursor(CursorIcon::NWSEResize);
+			}
+			
 			_ => {}
 		}
     }
@@ -76,6 +90,7 @@ impl WindowResizeHandles {
 		}
 		
 		if hover {
+			self.corner_handle(mouse, rect);
 			self.right_handle(mouse, rect);
 			self.bottom_handle(mouse, rect);
 		}
@@ -97,6 +112,11 @@ impl WindowResizeHandles {
 			
 			&Some(ResizeAxis::Y(start, o_height)) => {
 				rect.h = o_height + (mouse.y - start);
+			}
+			
+			&Some(ResizeAxis::XY(sx, sy, ow, oh)) => {
+				rect.w = ow + (mouse.x - sx);
+				rect.h = oh + (mouse.y - sy);
 			}
 			
 			_ => {}
@@ -133,6 +153,23 @@ impl WindowResizeHandles {
 			
 			if is_mouse_button_pressed(Left) {
 				self.resizing = Some(ResizeAxis::Y(mouse.y, rect.h))
+			}
+		}
+	}
+	
+	pub fn corner_handle(&mut self, mouse: Vec2, rect: &mut Rect) {
+		let handle = Rect::new(
+			rect.x + rect.w - self.corner_size/2.0,
+			rect.y + rect.h - self.corner_size/2.0,
+			self.corner_size,
+			self.corner_size
+		);
+		
+		if handle.contains(mouse) && self.resizing.is_none() {
+			self.hovering_handle = Some(ResizeHandle::Corner);
+			
+			if is_mouse_button_pressed(Left) {
+				self.resizing = Some(ResizeAxis::XY(mouse.x, mouse.y, rect.w, rect.h))
 			}
 		}
 	}

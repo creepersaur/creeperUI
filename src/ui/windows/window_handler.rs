@@ -45,7 +45,7 @@ impl WindowHandler {
 			if win.open {
 				win.update(is_active, self.mouse_action.clone());
 				
-				if win.hover {
+				if win.hover || win.resizing {
 					self.mouse_action = MouseAction::WindowHover(id);
 				}
 				

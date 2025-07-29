@@ -14,10 +14,11 @@ pub struct Window {
     resize_handles: WindowResizeHandles,
 
     mouse: Vec2,
+    pub open: bool,
     pub active: bool,
     pub hover: bool,
-    pub open: bool,
     pub dragging: Option<Vec2>,
+    pub resizing: bool,
 }
 
 impl Window {
@@ -29,12 +30,13 @@ impl Window {
             rect: Rect::new(0.0, 0.0, 200.0, 150.0),
             info: WindowInfo::new(),
             resize_handles: WindowResizeHandles::new(),
-
+            
+            open: true,
             mouse: mouse_position().into(),
             active: false,
             hover: false,
             dragging: None,
-            open: true,
+            resizing: false
         }
     }
 
@@ -173,7 +175,7 @@ impl Window {
         let mut title_rect = self.rect.clone();
         title_rect.h = self.theme.title_thickness;
 
-        if is_mouse_button_pressed(Left) {
+        if is_mouse_button_pressed(Left) && window_action {
             if !active_taken {
                 self.active = hover;
             } else {
@@ -196,7 +198,8 @@ impl Window {
         }
 
         self.update_resize_handles(window_action);
-
+        self.resizing = self.resize_handles.resizing.is_some();
+        
         if let Some(start_offset) = self.dragging {
             self.set_pos(self.mouse + start_offset);
             self.clamp();

@@ -1,3 +1,4 @@
+#![allow(unused)]
 mod ui;
 
 use macroquad::miniquad::CursorIcon;
