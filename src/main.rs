@@ -1,30 +1,32 @@
 #![allow(unused)]
 mod ui;
+mod widgets;
 
 use macroquad::miniquad::CursorIcon;
 use macroquad::miniquad::window::set_mouse_cursor;
 use macroquad::prelude::*;
-use crate::ui::windows::window_handler::WindowHandler;
+use ui::windows::window_handler::WindowHandler;
+use widgets::{widget::*, WidgetId};
 
 #[macroquad::main("Hello")]
 async fn main() {
-    let mut winhandler = WindowHandler::new().await;
+    let mut ui = WindowHandler::new().await;
     
     loop {
         set_mouse_cursor(CursorIcon::Default);
         
-        winhandler.begin("hello")
-            .set_title("First")
-            .once(|w| {
-                w.set_pos(vec2(200., 200.));
-            });
+        let win = ui.begin("hello")
+            .set_title("Hello");
         
-        winhandler.begin("world")
-            .set_title("Second");
+        win.text(line_id!(), &"Wow this works");
+        if win.button(123, &"CLICK ME!").clicked {
+            println!("Grr you clicked the first button!")
+        }
+        win.text((), &"Wow this works");
         
-        winhandler.update();
-        winhandler.render();
-        winhandler.queue_removable();
+        ui.update();
+        ui.render();
+        ui.queue_removable();
         
         next_frame().await
     }

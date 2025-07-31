@@ -5,3 +5,5 @@ edition = "2021"
 
 [dependencies]
 macroquad = "*"
+indexmap = "2"
+owo-colors = "*"

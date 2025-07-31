@@ -30,7 +30,9 @@ impl WindowHandler {
 			self.latest_active.insert(0, id.to_string());
 		}
 		
-		self.windows.get_mut(&id.to_string()).unwrap()
+		let w = self.windows.get_mut(&id.to_string()).unwrap();
+		w.begin_widgets();
+		w
 	}
 	
 	pub fn update(&mut self) {
@@ -80,5 +82,8 @@ impl WindowHandler {
 		self.windows.retain(|x, _| self.safe_queue.contains(x));
 		self.latest_active.retain(|x| self.safe_queue.contains(x));
 		self.safe_queue.clear();
+		for (_, w) in self.windows.iter_mut() {
+			w.end_widgets()
+		}
 	}
 }

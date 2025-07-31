@@ -4,11 +4,14 @@ use crate::ui::windows::window_theme::WindowTheme;
 use crate::ui::mouse_action::MouseAction;
 use macroquad::input::MouseButton::Left;
 use macroquad::prelude::*;
+use crate::widgets::widget_holder::WidgetHolder;
+use crate::widgets::*;
 
 pub struct Window {
     pub id: String,
     pub title: String,
     pub rect: Rect,
+    pub widget_holder: WidgetHolder,
     theme: WindowTheme,
     info: WindowInfo,
     resize_handles: WindowResizeHandles,
@@ -30,6 +33,7 @@ impl Window {
             rect: Rect::new(0.0, 0.0, 200.0, 150.0),
             info: WindowInfo::new(),
             resize_handles: WindowResizeHandles::new(),
+            widget_holder: WidgetHolder::new(),
             
             open: true,
             mouse: mouse_position().into(),
@@ -68,6 +72,11 @@ impl Window {
         }
         self
     }
+    
+    pub fn set_min_size(&mut self, size: Vec2) -> &mut Window {
+        self.info.min_size = size;
+        self
+    }
 }
 
 /////////////////////////////////////
@@ -88,6 +97,8 @@ impl Window {
         // TITLEBAR
         self.draw_titlebar();
 
+        self.widget_holder.render(&self.rect, &self.theme.font);
+        
         // OUTLINE
         draw_rectangle_lines(
             self.rect.x,
@@ -101,7 +112,7 @@ impl Window {
                 _ => self.theme.win_stroke,
             },
         );
-
+        
         self.draw_resize_handles();
     }
 
@@ -156,6 +167,7 @@ impl Window {
 
     pub fn draw_resize_handles(&self) {
         self.resize_handles.render(&self.rect, &self.theme);
+        
     }
 }
 
@@ -184,6 +196,9 @@ impl Window {
         }
 
         self.handle_close_button(window_action);
+        if window_action {
+            self.widget_holder.update(&self.rect, hover, self.mouse, &self.theme.font)
+        }
 
         if self.active
             && is_mouse_button_pressed(Left)
@@ -203,10 +218,38 @@ impl Window {
         if let Some(start_offset) = self.dragging {
             self.set_pos(self.mouse + start_offset);
             self.clamp();
+        } else if self.resizing {
+            self.clamp();
         }
     }
 
     pub fn clamp(&mut self) {
+        // CLAMP SIZE
+        
+        if self.rect.h < self.theme.title_thickness {
+            self.rect.h = self.theme.title_thickness;
+        }
+        
+        let title_dim = measure_text(
+            &self.title,
+            Some(&self.theme.font),
+            13,
+            1.0
+        );
+        if self.rect.w < title_dim.width.max(self.info.close_button_rect.w - 10.0) + 20.0 {
+            self.rect.w = title_dim.width.max(self.info.close_button_rect.w - 10.0) + 20.0
+        }
+        
+        if self.rect.w < self.info.min_size.x {
+            self.rect.w = self.info.min_size.x;
+        }
+        
+        if self.rect.h < self.info.min_size.y {
+            self.rect.h = self.info.min_size.y;
+        }
+        
+        // CLAMP POSITION
+        
         if self.rect.x < 0.0 {
             self.rect.x = 0.0;
         } else if self.rect.x > screen_width() - self.rect.w {
@@ -258,5 +301,27 @@ impl Window {
 
     fn update_resize_handles(&mut self, window_action: bool) {
         self.resize_handles.update(&mut self.rect, window_action);
+    }
+}
+
+/////////////////////////////////////
+// WIDGET
+/////////////////////////////////////
+
+impl Window {
+    pub fn begin_widgets(&mut self) {
+        self.widget_holder.reset();
+    }
+    
+    pub fn end_widgets(&mut self) {
+        self.widget_holder.retain();
+    }
+    
+    pub fn text(&mut self, id: impl Into<WidgetId>, label: &'static impl ToString) -> &mut Text {
+        self.widget_holder.text(id.into(), label)
+    }
+    
+    pub fn button(&mut self, id: impl Into<WidgetId>, label: &'static impl ToString) -> &mut Button {
+        self.widget_holder.button(id.into(), label)
     }
 }
