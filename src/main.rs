@@ -18,11 +18,9 @@ async fn main() {
         let win = ui.begin("hello")
             .set_title("Hello");
         
-        win.text(line_id!(), &"Wow this works");
-        if win.button(123, &"CLICK ME!").clicked {
-            println!("Grr you clicked the first button!")
+        for i in 0..10 {
+            win.button(generate_id!(i), &"Wow this works");
         }
-        win.text((), &"Wow this works");
         
         ui.update();
         ui.render();

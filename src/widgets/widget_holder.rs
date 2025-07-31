@@ -5,7 +5,6 @@ use indexmap::IndexSet;
 use owo_colors::OwoColorize;
 
 pub struct WidgetHolder {
-	target: RenderTarget,
 	widgets: HashMap<String, Box<dyn Widget>>,
 	frame_ids: IndexSet<String>
 }
@@ -13,7 +12,6 @@ pub struct WidgetHolder {
 impl WidgetHolder {
 	pub fn new() -> Self {
 		Self {
-			target: render_target(200, 200),
 			widgets: HashMap::new(),
 			frame_ids: IndexSet::new(),
 		}
@@ -28,13 +26,16 @@ impl WidgetHolder {
 	}
 	
 	pub fn render(&self, rect: &Rect, font: &Font) {
-		let zoom = 0.01;
+		let scale = 0.01;
+		let (zoom_x, zoom_y) = (scale / rect.w * 200.0, scale / (rect.h - 30.0) * 200.0);
+		
+		let target = render_target(rect.w as u32, (rect.h - 30.0) as u32);
 		let mut holder_rect = Rect::new(rect.x + 5.0, rect.y + 35.0, 0.0, 0.0);
 		
 		set_camera(&Camera2D {
-			zoom: vec2(zoom, zoom),
-			target: vec2(1.0/zoom, 1.0/zoom),
-			render_target: Some(self.target.clone()),
+			zoom: vec2(zoom_x, zoom_y),
+			target: vec2(1.0/zoom_x, 1.0/zoom_y),
+			render_target: Some(target.clone()),
 			..Default::default()
 		});
 		
@@ -52,7 +53,7 @@ impl WidgetHolder {
 		}
 		
 		set_default_camera();
-		draw_texture_ex(&self.target.texture, rect.x + 5.0, rect.y + 35.0, WHITE, DrawTextureParams{
+		draw_texture_ex(&target.texture, rect.x + 5.0, rect.y + 35.0, WHITE, DrawTextureParams{
 			source: Some(Rect::new(0.0, 0.0, (rect.w - 5.0).max(0.0), (rect.h - 35.0).max(0.0))),
 			..Default::default()
 		});

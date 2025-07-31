@@ -26,11 +26,20 @@ macro_rules! impl_widget_id {
 }
 
 #[macro_export]
-macro_rules! line_id {
+macro_rules! generate_id {
     () => {
 		$crate::widgets::widget::WidgetId::Explicit(format!(
             "{}:{}:{}",
-            file!(),
+			file!(),
+            line!(),
+            column!()
+        ))
+	};
+	($extra_label: expr) => {
+		$crate::widgets::widget::WidgetId::Explicit(format!(
+            "{}:{}:{}:{}",
+            $extra_label,
+			file!(),
             line!(),
             column!()
         ))
