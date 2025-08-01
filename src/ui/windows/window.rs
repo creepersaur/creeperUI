@@ -191,9 +191,6 @@ impl Window {
             || mouse_action == MouseAction::Normal;
         self.hover = window_action && hover;
 
-        let mut title_rect = self.rect.clone();
-        title_rect.h = self.theme.title_thickness;
-
         if is_mouse_button_pressed(Left) && window_action {
             if !active_taken {
                 self.active = hover;
@@ -207,20 +204,10 @@ impl Window {
             self.widget_holder.update(&self.rect, self.info.show_titlebar, hover, self.mouse, &self.theme.font)
         }
 
-        if self.active
-            && is_mouse_button_pressed(Left)
-            && !self.info.close_button_pressed
-            && title_rect.contains(self.mouse)
-        {
-            self.dragging = Some(vec2(self.rect.x, self.rect.y) - self.mouse);
-        }
-
-        if is_mouse_button_released(Left) {
-            self.dragging = None;
-        }
-
         self.update_resize_handles(window_action);
         self.resizing = self.resize_handles.resizing.is_some();
+        
+        self.handle_dragging();
         
         if let Some(start_offset) = self.dragging {
             self.set_pos(self.mouse + start_offset);
@@ -230,6 +217,24 @@ impl Window {
         }
     }
 
+    fn handle_dragging(&mut self) {
+        let mut title_rect = self.rect.clone();
+        title_rect.h = self.theme.title_thickness;
+        
+        if self.active
+            && !self.resizing
+            && !self.info.close_button_pressed
+            && is_mouse_button_pressed(Left)
+            && title_rect.contains(self.mouse)
+        {
+            self.dragging = Some(vec2(self.rect.x, self.rect.y) - self.mouse);
+        }
+        
+        if is_mouse_button_released(Left) {
+            self.dragging = None;
+        }
+    }
+    
     pub fn clamp(&mut self) {
         // CLAMP SIZE
         
