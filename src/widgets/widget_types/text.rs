@@ -3,11 +3,11 @@ use macroquad::prelude::*;
 use crate::widgets::widget::Widget;
 
 pub struct Text {
-	value: Box<&'static dyn ToString>
+	value: String
 }
 
 impl Text {
-	pub fn new(value: Box<&'static dyn ToString>) -> Self {
+	pub fn new(value: String) -> Self {
 		Self { value }
 	}
 }

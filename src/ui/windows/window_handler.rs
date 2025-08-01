@@ -2,6 +2,7 @@
 use crate::ui::mouse_action::MouseAction;
 use crate::ui::windows::window::Window;
 use crate::ui::windows::window_theme::WindowTheme;
+use crate::widgets::WidgetId;
 
 pub struct WindowHandler {
 	windows: HashMap<String, Window>,

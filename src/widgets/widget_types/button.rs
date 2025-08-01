@@ -3,14 +3,14 @@ use macroquad::prelude::*;
 use crate::widgets::widget::Widget;
 
 pub struct Button {
-	value: Box<&'static dyn ToString>,
+	pub value: String,
 	pub hovered: bool,
 	pub pressed: bool,
 	pub clicked: bool,
 }
 
 impl Button {
-	pub fn new(value: Box<&'static dyn ToString>) -> Self {
+	pub fn new(value: String) -> Self {
 		Self {
 			value,
 			hovered: false,

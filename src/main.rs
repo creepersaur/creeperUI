@@ -15,12 +15,19 @@ async fn main() {
     loop {
         set_mouse_cursor(CursorIcon::Default);
         
-        let win = ui.begin("hello")
-            .set_title("Hello");
+        let win = ui.begin("bald")
+            .set_title("Bald Window")
+            .set_titlebar(false);
         
-        for i in 0..10 {
-            win.button(generate_id!(i), &"Wow this works");
-        }
+        win.text((), "Lol theres no titlebar");
+        win.text(generate_id!(), "Hello World");
+        win.button((), "Button");
+        
+        let win = ui.begin("not bald")
+            .set_title("Not bald");
+        
+        win.text((), "I at least have a titlebar");
+        win.button((), "Button");
         
         ui.update();
         ui.render();

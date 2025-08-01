@@ -48,6 +48,11 @@ impl Window {
         self.title = title.to_string();
         self
     }
+    
+    pub fn set_titlebar(&mut self, showing: bool) -> &mut Window {
+        self.info.show_titlebar = showing;
+        self
+    }
 
     pub fn set_pos(&mut self, position: Vec2) -> &mut Window {
         self.rect.x = position.x;
@@ -95,9 +100,11 @@ impl Window {
         );
 
         // TITLEBAR
-        self.draw_titlebar();
+        if self.info.show_titlebar {
+            self.draw_titlebar();
+        }
 
-        self.widget_holder.render(&self.rect, &self.theme.font);
+        self.widget_holder.render(&self.rect, self.info.show_titlebar, &self.theme.font);
         
         // OUTLINE
         draw_rectangle_lines(
@@ -197,7 +204,7 @@ impl Window {
 
         self.handle_close_button(window_action);
         if window_action {
-            self.widget_holder.update(&self.rect, hover, self.mouse, &self.theme.font)
+            self.widget_holder.update(&self.rect, self.info.show_titlebar, hover, self.mouse, &self.theme.font)
         }
 
         if self.active
@@ -236,8 +243,13 @@ impl Window {
             13,
             1.0
         );
-        if self.rect.w < title_dim.width.max(self.info.close_button_rect.w - 10.0) + 20.0 {
-            self.rect.w = title_dim.width.max(self.info.close_button_rect.w - 10.0) + 20.0
+        if self.info.show_titlebar {
+            if self.rect.w < title_dim.width.max(self.info.close_button_rect.w - 10.0) + 20.0 {
+                self.rect.w = title_dim.width.max(self.info.close_button_rect.w - 10.0) + 20.0
+            }
+        } else {
+            self.rect.w = self.rect.w.max(self.theme.title_thickness);
+            self.rect.h = self.rect.h.max(self.theme.title_thickness);
         }
         
         if self.rect.w < self.info.min_size.x {
@@ -264,6 +276,11 @@ impl Window {
     }
 
     fn handle_close_button(&mut self, window_action: bool) {
+        if !self.info.show_titlebar {
+            self.info.close_button_hovered = false;
+            return
+        }
+        
         self.info.close_button_rect.x = self.rect.x + self.rect.w - self.theme.title_thickness;
         self.info.close_button_rect.y = self.rect.y;
         self.info.close_button_rect.w = self.theme.title_thickness;
@@ -317,11 +334,11 @@ impl Window {
         self.widget_holder.retain();
     }
     
-    pub fn text(&mut self, id: impl Into<WidgetId>, label: &'static impl ToString) -> &mut Text {
-        self.widget_holder.text(id.into(), label)
+    pub fn text(&mut self, id: impl Into<WidgetId>, label: impl ToString) -> &mut Text {
+        self.widget_holder.text(id.into(), label.to_string())
     }
     
-    pub fn button(&mut self, id: impl Into<WidgetId>, label: &'static impl ToString) -> &mut Button {
-        self.widget_holder.button(id.into(), label)
+    pub fn button(&mut self, id: impl Into<WidgetId>, label: impl ToString) -> &mut Button {
+        self.widget_holder.button(id.into(), label.to_string())
     }
 }

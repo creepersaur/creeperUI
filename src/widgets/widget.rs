@@ -1,4 +1,5 @@
 ﻿use std::any::Any;
+use std::fmt::Display;
 use macroquad::prelude::*;
 
 #[derive(Clone, Debug)]
@@ -10,6 +11,15 @@ pub enum WidgetId {
 impl From<()> for WidgetId {
 	fn from(_: ()) -> Self {
 		WidgetId::Auto
+	}
+}
+
+impl Display for WidgetId {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}", match self {
+			WidgetId::Auto => "Auto".into(),
+			WidgetId::Explicit(s) => s.clone()
+		})
 	}
 }
 
@@ -28,21 +38,21 @@ macro_rules! impl_widget_id {
 #[macro_export]
 macro_rules! generate_id {
     () => {
-		$crate::widgets::widget::WidgetId::Explicit(format!(
+		format!(
             "{}:{}:{}",
 			file!(),
             line!(),
             column!()
-        ))
+        )
 	};
 	($extra_label: expr) => {
-		$crate::widgets::widget::WidgetId::Explicit(format!(
+		format!(
             "{}:{}:{}:{}",
             $extra_label,
 			file!(),
             line!(),
             column!()
-        ))
+        )
 	};
 }
 

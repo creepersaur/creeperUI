@@ -25,12 +25,16 @@ impl WidgetHolder {
 		self.widgets.retain(|k, _| self.frame_ids.contains(k));
 	}
 	
-	pub fn render(&self, rect: &Rect, font: &Font) {
+	pub fn render(&self, rect: &Rect, show_titlebar: bool, font: &Font) {
 		let scale = 0.01;
-		let (zoom_x, zoom_y) = (scale / rect.w * 200.0, scale / (rect.h - 30.0) * 200.0);
 		
-		let target = render_target(rect.w as u32, (rect.h - 30.0) as u32);
-		let mut holder_rect = Rect::new(rect.x + 5.0, rect.y + 35.0, 0.0, 0.0);
+		let title_thickness = match show_titlebar {
+			false => 0.0,
+			_ => 30.0
+		};
+		let (zoom_x, zoom_y) = (scale / rect.w * 200.0, scale / (rect.h - title_thickness) * 200.0);
+		let target = render_target(rect.w as u32, (rect.h - title_thickness) as u32);
+		let mut holder_rect = Rect::new(rect.x + 5.0, rect.y + 5.0 + title_thickness, 0.0, 0.0);
 		
 		set_camera(&Camera2D {
 			zoom: vec2(zoom_x, zoom_y),
@@ -53,14 +57,18 @@ impl WidgetHolder {
 		}
 		
 		set_default_camera();
-		draw_texture_ex(&target.texture, rect.x + 5.0, rect.y + 35.0, WHITE, DrawTextureParams{
-			source: Some(Rect::new(0.0, 0.0, (rect.w - 5.0).max(0.0), (rect.h - 35.0).max(0.0))),
+		draw_texture_ex(&target.texture, rect.x + 5.0, rect.y + 5.0 + title_thickness, WHITE, DrawTextureParams{
+			source: Some(Rect::new(0.0, 0.0, (rect.w - 5.0).max(0.0), (rect.h - 5.0 - title_thickness).max(0.0))),
 			..Default::default()
 		});
 	}
 	
-	pub fn update(&mut self, rect: &Rect, hover: bool, mouse: Vec2, font: &Font) {
-		let mut holder_rect = Rect::new(rect.x + 5.0, rect.y + 35.0, 0.0, 0.0);
+	pub fn update(&mut self, rect: &Rect, show_titlebar: bool, hover: bool, mouse: Vec2, font: &Font) {
+		let title_thickness = match show_titlebar {
+			false => 0.0,
+			_ => 30.0
+		};
+		let mut holder_rect = Rect::new(rect.x + 5.0, rect.y + 5.0 + title_thickness, 0.0, 0.0);
 		
 		for i in self.frame_ids.iter() {
 			let widget_size  = self.widgets.get_mut(i).unwrap().update(&holder_rect, hover, mouse, font);
@@ -80,11 +88,11 @@ impl WidgetHolder {
 ////////////////////////////////////////////////////////
 
 impl WidgetHolder {
-	pub fn text(&mut self, id: WidgetId, label: &'static impl ToString) -> &mut Text {
+	pub fn text(&mut self, id: WidgetId, label: String) -> &mut Text {
 		let mut new_id = String::from("Text:");
 		
 		new_id.push_str(match id {
-			WidgetId::Auto => label.to_string(),
+			WidgetId::Auto => label.clone(),
 			WidgetId::Explicit(s) => s,
 		}.as_str());
 		
@@ -92,18 +100,18 @@ impl WidgetHolder {
 			panic!("Widget with id/label: {new_id} already exists. Please give a unique explicit ID.");
 		}
 		
-		let w = Text::new(Box::new(label));
+		let w = Text::new(label);
 		self.widgets.insert(new_id.clone(), Box::new(w));
 		self.frame_ids.insert(new_id.clone());
 		
 		self.widgets.get_mut(&new_id).unwrap().as_any_mut().downcast_mut().unwrap()
 	}
 	
-	pub fn button(&mut self, id: WidgetId, label: &'static impl ToString) -> &mut Button {
+	pub fn button(&mut self, id: WidgetId, label: String) -> &mut Button {
 		let mut new_id = String::from("Button:");
 		
 		new_id.push_str(match id {
-			WidgetId::Auto => label.to_string(),
+			WidgetId::Auto => label.clone(),
 			WidgetId::Explicit(s) => s,
 		}.as_str());
 		
@@ -112,11 +120,14 @@ impl WidgetHolder {
 		}
 		
 		if !self.widgets.contains_key(&new_id) {
-			let w = Button::new(Box::new(label));
+			let w = Button::new(label.clone());
 			self.widgets.insert(new_id.clone(), Box::new(w));
 		}
 		self.frame_ids.insert(new_id.clone());
 		
-		self.widgets.get_mut(&new_id).unwrap().as_any_mut().downcast_mut().unwrap()
+		// UPDATE STATE
+		let b: &mut Button = self.widgets.get_mut(&new_id).unwrap().as_any_mut().downcast_mut().unwrap();
+		b.value = label;
+		b
 	}
 }
