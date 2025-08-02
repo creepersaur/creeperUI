@@ -84,7 +84,10 @@ impl WindowHandler {
 		self.latest_active.retain(|x| self.safe_queue.contains(x));
 		self.safe_queue.clear();
 		for (_, w) in self.windows.iter_mut() {
-			w.end_widgets()
+			w.end_widgets();
+			if !w.info.ran_once {
+				w.info.ran_once = true;
+			}
 		}
 	}
 }

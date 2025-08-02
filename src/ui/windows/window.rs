@@ -4,6 +4,7 @@ use crate::ui::windows::window_theme::WindowTheme;
 use crate::ui::mouse_action::MouseAction;
 use macroquad::input::MouseButton::Left;
 use macroquad::prelude::*;
+use crate::ui::windows::action_type::ActionType;
 use crate::widgets::widget_holder::WidgetHolder;
 use crate::widgets::*;
 
@@ -12,8 +13,8 @@ pub struct Window {
     pub title: String,
     pub rect: Rect,
     pub widget_holder: WidgetHolder,
+    pub info: WindowInfo,
     theme: WindowTheme,
-    info: WindowInfo,
     resize_handles: WindowResizeHandles,
 
     mouse: Vec2,
@@ -54,26 +55,38 @@ impl Window {
         self
     }
 
-    pub fn set_pos(&mut self, position: Vec2) -> &mut Window {
-        self.rect.x = position.x;
-        self.rect.y = position.y;
+    pub fn set_pos(&mut self, position: Vec2, action_type: impl Into<ActionType> + Clone) -> &mut Window {
+        if action_type.clone().into() == ActionType::Once && !self.info.ran_once {
+            self.rect.x = position.x;
+            self.rect.y = position.y;
+        } else if action_type.into() == ActionType::EachFrame {
+            self.rect.x = position.x;
+            self.rect.y = position.y;
+        }
+        
         self
     }
 
-    pub fn set_size(&mut self, size: Vec2) -> &mut Window {
-        self.rect.w = size.x;
-        self.rect.h = size.y;
+    pub fn set_size(&mut self, size: Vec2, action_type: impl Into<ActionType> + Clone) -> &mut Window {
+        if action_type.clone().into() == ActionType::Once && !self.info.ran_once {
+            self.rect.w = size.x;
+            self.rect.h = size.y;
+        } else if action_type.into() == ActionType::EachFrame {
+            self.rect.w = size.x;
+            self.rect.h = size.y;
+        }
+        
         self
     }
 
     pub fn close(&mut self) {
         self.open = false;
+        
     }
 
     pub fn once(&mut self, f: impl FnOnce(&mut Window)) -> &mut Window {
         if !self.info.ran_once {
             f(self);
-            self.info.ran_once = true;
         }
         self
     }
@@ -199,18 +212,19 @@ impl Window {
             }
         }
 
-        self.handle_close_button(window_action);
+        self.update_resize_handles(window_action);
+        if !self.resizing {
+            self.handle_close_button(window_action);
+        }
+        
         if window_action {
             self.widget_holder.update(&self.rect, self.info.show_titlebar, hover, self.mouse, &self.theme.font)
         }
-
-        self.update_resize_handles(window_action);
-        self.resizing = self.resize_handles.resizing.is_some();
         
         self.handle_dragging();
         
         if let Some(start_offset) = self.dragging {
-            self.set_pos(self.mouse + start_offset);
+            self.set_pos(self.mouse + start_offset, ActionType::EachFrame);
             self.clamp();
         } else if self.resizing {
             self.clamp();
@@ -323,6 +337,7 @@ impl Window {
 
     fn update_resize_handles(&mut self, window_action: bool) {
         self.resize_handles.update(&mut self.rect, window_action);
+        self.resizing = self.resize_handles.resizing.is_some();
     }
 }
 

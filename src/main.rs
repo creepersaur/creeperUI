@@ -7,6 +7,7 @@ use macroquad::miniquad::window::set_mouse_cursor;
 use macroquad::prelude::*;
 use ui::windows::window_handler::WindowHandler;
 use widgets::{widget::*, WidgetId};
+use crate::ui::windows::action_type::ActionType;
 
 #[macroquad::main("Hello")]
 async fn main() {
@@ -17,7 +18,8 @@ async fn main() {
         
         let win = ui.begin("bald")
             .set_title("Bald Window")
-            .set_titlebar(false);
+            .set_titlebar(false)
+            .set_pos(vec2(200., 200.), ActionType::Once);
         
         win.text((), "Lol theres no titlebar");
         win.text(generate_id!(), "Hello World");
