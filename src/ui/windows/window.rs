@@ -84,6 +84,11 @@ impl Window {
         
     }
 
+    pub fn show(&mut self) {
+        self.open = true;
+        
+    }
+    
     pub fn once(&mut self, f: impl FnOnce(&mut Window)) -> &mut Window {
         if !self.info.ran_once {
             f(self);
@@ -364,5 +369,9 @@ impl Window {
     
     pub fn checkbox(&mut self, id: impl Into<WidgetId>, label: impl ToString, default_value: bool) -> &mut Checkbox {
         self.widget_holder.checkbox(id.into(), label.to_string(), default_value)
+    }
+    
+    pub async fn image(&mut self, id: impl Into<WidgetId>, path: impl ToString, size: Vec2) -> &mut ImageWidget {
+        self.widget_holder.image(id.into(), path.to_string(), size).await
     }
 }

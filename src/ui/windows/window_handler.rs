@@ -1,4 +1,5 @@
 ﻿use std::collections::HashMap;
+use macroquad::miniquad::window::set_mouse_cursor;
 use crate::ui::mouse_action::MouseAction;
 use crate::ui::windows::window::Window;
 use crate::ui::windows::window_theme::WindowTheme;
@@ -89,5 +90,11 @@ impl WindowHandler {
 				w.info.ran_once = true;
 			}
 		}
+	}
+	
+	pub fn end_windows(&mut self) {
+		self.update();
+		self.render();
+		self.queue_removable();
 	}
 }

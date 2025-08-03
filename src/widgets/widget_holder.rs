@@ -49,7 +49,7 @@ impl WidgetHolder {
 			let widget_size  = self.widgets.get(i).unwrap().render(&holder_rect, font);
 			
 			if let Some(size) = widget_size {
-				holder_rect.h += size.y;
+				holder_rect.h += size.y + 5.0;
 				if holder_rect.w < size.x {
 					holder_rect.w = size.x
 				}
@@ -74,7 +74,7 @@ impl WidgetHolder {
 			let widget_size  = self.widgets.get_mut(i).unwrap().update(&holder_rect, hover, mouse, font);
 			
 			if let Some(size) = widget_size {
-				holder_rect.h += size.y;
+				holder_rect.h += size.y + 5.0;
 				if holder_rect.w < size.x {
 					holder_rect.w = size.x
 				}
@@ -153,5 +153,24 @@ impl WidgetHolder {
 		let b: &mut Checkbox = self.widgets.get_mut(&new_id).unwrap().as_any_mut().downcast_mut().unwrap();
 		b.text = label;
 		b
+	}
+	
+	pub async fn image(&mut self, id: WidgetId, path: String, size: Vec2) -> &mut ImageWidget {
+		let mut new_id = String::from("Image:");
+		
+		new_id.push_str(match id {
+			WidgetId::Auto => path.clone(),
+			WidgetId::Explicit(s) => s,
+		}.as_str());
+		
+		if self.frame_ids.contains(&new_id) {
+			panic!("Widget with id/label: {new_id} already exists. Please give a unique explicit ID.");
+		}
+		
+		let w = ImageWidget::new(path, size).await;
+		self.widgets.insert(new_id.clone(), Box::new(w));
+		self.frame_ids.insert(new_id.clone());
+		
+		self.widgets.get_mut(&new_id).unwrap().as_any_mut().downcast_mut().unwrap()
 	}
 }

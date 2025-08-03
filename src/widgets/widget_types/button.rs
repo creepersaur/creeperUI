@@ -69,7 +69,7 @@ impl Widget for Button {
 			);
 		}
 		
-		Some(vec2(text_dim.width, text_dim.height + 15.0))
+		Some(vec2(text_dim.width, text_dim.height + 10.0))
 	}
 	
 	fn update(&mut self, rect: &Rect, hover: bool, mouse: Vec2, font: &Font) -> Option<Vec2> {
@@ -104,6 +104,6 @@ impl Widget for Button {
 			self.pressed = false;
 		}
 		
-		Some(vec2(text_dim.width, text_dim.height + 15.0))
+		Some(vec2(text_dim.width, text_dim.height + 10.0))
 	}
 }

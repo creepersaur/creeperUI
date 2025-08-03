@@ -38,7 +38,7 @@ impl Widget for Text {
 			);
 		}
 		
-		Some(vec2(text_dim.width, text_dim.height + 5.0))
+		Some(vec2(text_dim.width, text_dim.height))
 	}
 	
 	fn update(&mut self, rect: &Rect, hover: bool, mouse: Vec2, font: &Font) -> Option<Vec2> {
@@ -49,6 +49,6 @@ impl Widget for Text {
 			1.0
 		);
 		
-		Some(vec2(text_dim.width, text_dim.height + 5.0))
+		Some(vec2(text_dim.width, text_dim.height))
 	}
 }

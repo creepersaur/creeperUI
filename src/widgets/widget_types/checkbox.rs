@@ -41,7 +41,10 @@ impl Widget for Checkbox {
 				TextParams {
 					font: Some(font),
 					font_size: 13,
-					color: WHITE,
+					color: match self.hovered {
+						true => WHITE,
+						_ => Color::new(0.9,0.9,0.9,0.9)
+					},
 					..Default::default()
 				}
 			);
@@ -98,7 +101,7 @@ impl Widget for Checkbox {
 			)
 		}
 		
-		Some(vec2(text_dim.width + 10.0 + text_dim.height, text_dim.height + 10.0))
+		Some(vec2(text_dim.width + 10.0 + text_dim.height, text_dim.height + 5.0))
 	}
 	
 	fn update(&mut self, rect: &Rect, hover: bool, mouse: Vec2, font: &Font) -> Option<Vec2> {
@@ -137,6 +140,6 @@ impl Widget for Checkbox {
 			self.value = !self.value;
 		}
 		
-		Some(vec2(text_dim.width + text_dim.height + 10.0, text_dim.height + 10.0))
+		Some(vec2(text_dim.width + text_dim.height + 10.0, text_dim.height + 5.0))
 	}
 }
