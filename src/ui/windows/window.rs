@@ -361,4 +361,8 @@ impl Window {
     pub fn button(&mut self, id: impl Into<WidgetId>, label: impl ToString) -> &mut Button {
         self.widget_holder.button(id.into(), label.to_string())
     }
+    
+    pub fn checkbox(&mut self, id: impl Into<WidgetId>, label: impl ToString, default_value: bool) -> &mut Checkbox {
+        self.widget_holder.checkbox(id.into(), label.to_string(), default_value)
+    }
 }

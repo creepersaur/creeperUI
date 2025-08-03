@@ -12,6 +12,7 @@ use crate::ui::windows::action_type::ActionType;
 #[macroquad::main("Hello")]
 async fn main() {
     let mut ui = WindowHandler::new().await;
+    let mut check = true;
     
     loop {
         set_mouse_cursor(CursorIcon::Default);
@@ -25,10 +26,20 @@ async fn main() {
         win.text(generate_id!(), "Hello World");
         win.button((), "Button");
         
+        if check {
+            win.text((), "Checked!");
+        }
+        
+        check = win.checkbox(generate_id!(), "IsChecked", check).value;
+        
+        if check {
+            win.button((), "Wow you checked it.");
+        }
+        
         let win = ui.begin("not bald")
             .set_title("Not bald");
         
-        win.text((), "I at least have a titlebar");
+        win.text((), "I have a titlebar");
         win.button((), "Button");
         
         ui.update();

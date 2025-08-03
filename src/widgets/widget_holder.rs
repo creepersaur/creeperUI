@@ -130,4 +130,28 @@ impl WidgetHolder {
 		b.value = label;
 		b
 	}
+	
+	pub fn checkbox(&mut self, id: WidgetId, label: String, value: bool) -> &mut Checkbox {
+		let mut new_id = String::from("Checkbox:");
+		
+		new_id.push_str(match id {
+			WidgetId::Auto => label.clone(),
+			WidgetId::Explicit(s) => s,
+		}.as_str());
+		
+		if self.frame_ids.contains(&new_id) {
+			panic!("{} Widget with id/label: {new_id} already exists. Please give a unique explicit ID.", "Error:".red());
+		}
+		
+		if !self.widgets.contains_key(&new_id) {
+			let w = Checkbox::new(label.clone(), value);
+			self.widgets.insert(new_id.clone(), Box::new(w));
+		}
+		self.frame_ids.insert(new_id.clone());
+		
+		// UPDATE STATE
+		let b: &mut Checkbox = self.widgets.get_mut(&new_id).unwrap().as_any_mut().downcast_mut().unwrap();
+		b.text = label;
+		b
+	}
 }
