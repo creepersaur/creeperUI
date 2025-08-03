@@ -24,7 +24,7 @@ impl Widget for Button {
 	fn as_any(&self) -> &dyn Any { self }
 	fn as_any_mut(&mut self) -> &mut (dyn Any + 'static) { self }
 	
-	fn render(&self, rect: &Rect, font: &Font) -> Option<Vec2> {
+	fn render(&self, rect: &Rect, font: &Font, win_rect: &Rect) -> Option<Vec2> {
 		let text_dim = measure_text(
 			&self.value.to_string(),
 			Some(font),
@@ -72,7 +72,7 @@ impl Widget for Button {
 		Some(vec2(text_dim.width, text_dim.height + 10.0))
 	}
 	
-	fn update(&mut self, rect: &Rect, hover: bool, mouse: Vec2, font: &Font) -> Option<Vec2> {
+	fn update(&mut self, rect: &Rect, hover: bool, mouse: Vec2, font: &Font, win_rect: &Rect) -> Option<Vec2> {
 		let text_dim = measure_text(
 			&self.value.to_string(),
 			Some(font),

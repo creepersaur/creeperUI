@@ -374,4 +374,8 @@ impl Window {
     pub async fn image(&mut self, id: impl Into<WidgetId>, path: impl ToString, size: Vec2) -> &mut ImageWidget {
         self.widget_holder.image(id.into(), path.to_string(), size).await
     }
+    
+    pub fn slider(&mut self, id: impl Into<WidgetId>, label: impl ToString, slider_info: SliderInfo) -> &mut Slider {
+        self.widget_holder.slider(id.into(), label.to_string(), slider_info)
+    }
 }

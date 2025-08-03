@@ -1,4 +1,6 @@
 ﻿use std::collections::{HashMap, HashSet};
+use std::fmt::format;
+use std::ops::Index;
 use macroquad::prelude::*;
 use crate::widgets::*;
 use indexmap::IndexSet;
@@ -46,7 +48,7 @@ impl WidgetHolder {
 		clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
 		
 		for i in self.frame_ids.iter() {
-			let widget_size  = self.widgets.get(i).unwrap().render(&holder_rect, font);
+			let widget_size  = self.widgets.get(i).unwrap().render(&holder_rect, font, rect);
 			
 			if let Some(size) = widget_size {
 				holder_rect.h += size.y + 5.0;
@@ -71,7 +73,7 @@ impl WidgetHolder {
 		let mut holder_rect = Rect::new(rect.x + 5.0, rect.y + 5.0 + title_thickness, 0.0, 0.0);
 		
 		for i in self.frame_ids.iter() {
-			let widget_size  = self.widgets.get_mut(i).unwrap().update(&holder_rect, hover, mouse, font);
+			let widget_size  = self.widgets.get_mut(i).unwrap().update(&holder_rect, hover, mouse, font, rect);
 			
 			if let Some(size) = widget_size {
 				holder_rect.h += size.y + 5.0;
@@ -89,35 +91,22 @@ impl WidgetHolder {
 
 impl WidgetHolder {
 	pub fn text(&mut self, id: WidgetId, label: String) -> &mut Text {
-		let mut new_id = String::from("Text:");
+		let new_id = create_widget_id("Text", &self.frame_ids, id, &label);
 		
-		new_id.push_str(match id {
-			WidgetId::Auto => label.clone(),
-			WidgetId::Explicit(s) => s,
-		}.as_str());
-		
-		if self.frame_ids.contains(&new_id) {
-			panic!("Widget with id/label: {new_id} already exists. Please give a unique explicit ID.");
+		if !self.widgets.contains_key(&new_id) {
+			let w = Text::new(label.clone());
+			self.widgets.insert(new_id.clone(), Box::new(w));
 		}
-		
-		let w = Text::new(label);
-		self.widgets.insert(new_id.clone(), Box::new(w));
 		self.frame_ids.insert(new_id.clone());
 		
-		self.widgets.get_mut(&new_id).unwrap().as_any_mut().downcast_mut().unwrap()
+		// UPDATE STATE
+		let b: &mut Text = self.widgets.get_mut(&new_id).unwrap().as_any_mut().downcast_mut().unwrap();
+		b.value = label;
+		b
 	}
 	
 	pub fn button(&mut self, id: WidgetId, label: String) -> &mut Button {
-		let mut new_id = String::from("Button:");
-		
-		new_id.push_str(match id {
-			WidgetId::Auto => label.clone(),
-			WidgetId::Explicit(s) => s,
-		}.as_str());
-		
-		if self.frame_ids.contains(&new_id) {
-			panic!("{} Widget with id/label: {new_id} already exists. Please give a unique explicit ID.", "Error:".red());
-		}
+		let new_id = create_widget_id("Button", &self.frame_ids, id, &label);
 		
 		if !self.widgets.contains_key(&new_id) {
 			let w = Button::new(label.clone());
@@ -132,16 +121,7 @@ impl WidgetHolder {
 	}
 	
 	pub fn checkbox(&mut self, id: WidgetId, label: String, value: bool) -> &mut Checkbox {
-		let mut new_id = String::from("Checkbox:");
-		
-		new_id.push_str(match id {
-			WidgetId::Auto => label.clone(),
-			WidgetId::Explicit(s) => s,
-		}.as_str());
-		
-		if self.frame_ids.contains(&new_id) {
-			panic!("{} Widget with id/label: {new_id} already exists. Please give a unique explicit ID.", "Error:".red());
-		}
+		let new_id = create_widget_id("Checkbox", &self.frame_ids, id, &label);
 		
 		if !self.widgets.contains_key(&new_id) {
 			let w = Checkbox::new(label.clone(), value);
@@ -156,21 +136,44 @@ impl WidgetHolder {
 	}
 	
 	pub async fn image(&mut self, id: WidgetId, path: String, size: Vec2) -> &mut ImageWidget {
-		let mut new_id = String::from("Image:");
+		let new_id = create_widget_id("Image", &self.frame_ids, id, &path);
 		
-		new_id.push_str(match id {
-			WidgetId::Auto => path.clone(),
-			WidgetId::Explicit(s) => s,
-		}.as_str());
-		
-		if self.frame_ids.contains(&new_id) {
-			panic!("Widget with id/label: {new_id} already exists. Please give a unique explicit ID.");
+		if !self.widgets.contains_key(&new_id) {
+			let w = ImageWidget::new(path, size).await;
+			self.widgets.insert(new_id.clone(), Box::new(w));
 		}
-		
-		let w = ImageWidget::new(path, size).await;
-		self.widgets.insert(new_id.clone(), Box::new(w));
 		self.frame_ids.insert(new_id.clone());
 		
 		self.widgets.get_mut(&new_id).unwrap().as_any_mut().downcast_mut().unwrap()
 	}
+	
+	pub fn slider(&mut self, id: WidgetId, label: String, slider_info: SliderInfo) -> &mut Slider {
+		let new_id = create_widget_id("Slider", &self.frame_ids, id, &label);
+		
+		if !self.widgets.contains_key(&new_id) {
+			let w = Slider::new(label.clone(), slider_info);
+			self.widgets.insert(new_id.clone(), Box::new(w));
+		}
+		self.frame_ids.insert(new_id.clone());
+		
+		// UPDATE STATE
+		let b: &mut Slider = self.widgets.get_mut(&new_id).unwrap().as_any_mut().downcast_mut().unwrap();
+		b.text = label;
+		b
+	}
+}
+
+fn create_widget_id(widget_type: &str, frame_ids: &IndexSet<String>, id: WidgetId, label: &String) -> String {
+	let mut new_id = format!("{widget_type}:");
+	
+	new_id.push_str(match id {
+		WidgetId::Auto => label.clone(),
+		WidgetId::Explicit(s) => s,
+	}.as_str());
+	
+	if frame_ids.contains(&new_id) {
+		panic!("Widget with id/label: {new_id} already exists. Please give a unique explicit ID.");
+	}
+	
+	new_id
 }
