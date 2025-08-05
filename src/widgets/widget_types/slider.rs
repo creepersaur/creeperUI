@@ -1,7 +1,9 @@
 ﻿use std::any::Any;
 use macroquad::input::MouseButton::Left;
 use macroquad::prelude::*;
+use crate::ui::mouse_action::WidgetAction;
 use crate::widgets::widget::Widget;
+use crate::widgets::widget_holder::UpdateInfo;
 
 pub struct Slider {
 	pub text: String,
@@ -107,10 +109,10 @@ impl Widget for Slider {
 			);
 		}
 		
-		Some(vec2(text_dim.width, text_dim.height + 10.0))
+		Some(vec2(text_dim.width + r_width, text_dim.height + 10.0))
 	}
 	
-	fn update(&mut self, rect: &Rect, hover: bool, mouse: Vec2, font: &Font, win_rect: &Rect) -> Option<Vec2> {
+	fn render_top(&self, rect: &Rect, font: &Font, win_rect: &Rect) -> Option<Vec2> {
 		let text_dim = measure_text(
 			&self.text.to_string(),
 			Some(font),
@@ -118,16 +120,29 @@ impl Widget for Slider {
 			1.0
 		);
 		
-		let r_left = rect.x + text_dim.width + 5.0;
 		let r_width = win_rect.w - text_dim.width - 15.0;
+		
+		Some(vec2(text_dim.width + r_width, text_dim.height + 10.0))
+	}
+	
+	fn update(&mut self, info: &mut UpdateInfo) -> Option<Vec2> {
+		let text_dim = measure_text(
+			&self.text.to_string(),
+			Some(info.font),
+			13,
+			1.0
+		);
+		
+		let r_left = info.rect.x + text_dim.width + 5.0;
+		let r_width = info.win_rect.w - text_dim.width - 15.0;
 		let rect = Rect::new(
 			r_left,
-			rect.y + rect.h + 5.0,
+			info.rect.y + info.rect.h + 5.0,
 			r_width,
 			text_dim.height + 4.0
 		);
 		
-		if rect.contains(mouse) {
+		if rect.contains(info.mouse) && !info.mouse_action.taken {
 			self.hovered = true;
 			if is_mouse_button_pressed(Left) {
 				self.pressed = true;
@@ -146,7 +161,7 @@ impl Widget for Slider {
 		};
 		
 		if self.pressed {
-			self.value = (((mouse.x - self.value_thickness/2.0 - r_left) / (r_width - self.value_thickness)) as f64 * (max - min) + min);
+			self.value = (((info.mouse.x - self.value_thickness/2.0 - r_left) / (r_width - self.value_thickness)) as f64 * (max - min) + min);
 		}
 		
 		self.value = self.value.clamp(min, max);

@@ -378,4 +378,15 @@ impl Window {
     pub fn slider(&mut self, id: impl Into<WidgetId>, label: impl ToString, slider_info: SliderInfo) -> &mut Slider {
         self.widget_holder.slider(id.into(), label.to_string(), slider_info)
     }
+    
+    pub fn dropdown(&mut self, id: impl Into<WidgetId>, items: Vec<impl ToString>, default_value: impl ToString) -> &mut Dropdown {
+        let stringed_items: Vec<_> = items.iter().map(|x| x.to_string()).collect();
+        let stringed_value = default_value.to_string();
+        
+        if !stringed_items.contains(&stringed_value) {
+            println!("{stringed_value} not found in items [Dropdown].")
+        }
+        
+        self.widget_holder.dropdown(id.into(), stringed_items, stringed_value)
+    }
 }

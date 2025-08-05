@@ -1,6 +1,8 @@
 ﻿use std::any::Any;
 use macroquad::prelude::*;
+use crate::ui::mouse_action::WidgetAction;
 use crate::widgets::widget::Widget;
+use crate::widgets::widget_holder::UpdateInfo;
 
 pub struct Text {
 	pub(crate) value: String
@@ -41,10 +43,21 @@ impl Widget for Text {
 		Some(vec2(text_dim.width, text_dim.height))
 	}
 	
-	fn update(&mut self, rect: &Rect, hover: bool, mouse: Vec2, font: &Font, win_rect: &Rect) -> Option<Vec2> {
+	fn render_top(&self, rect: &Rect, font: &Font, win_rect: &Rect) -> Option<Vec2> {
 		let text_dim = measure_text(
 			&self.value.to_string(),
 			Some(font),
+			13,
+			1.0
+		);
+		
+		Some(vec2(text_dim.width, text_dim.height))
+	}
+	
+	fn update(&mut self, info: &mut UpdateInfo) -> Option<Vec2> {
+		let text_dim = measure_text(
+			&self.value.to_string(),
+			Some(info.font),
 			13,
 			1.0
 		);

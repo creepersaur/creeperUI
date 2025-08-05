@@ -1,6 +1,8 @@
 ﻿use std::any::Any;
 use macroquad::prelude::*;
+use crate::ui::mouse_action::WidgetAction;
 use crate::widgets::widget::Widget;
+use crate::widgets::widget_holder::UpdateInfo;
 
 pub struct Button {
 	pub value: String,
@@ -72,7 +74,7 @@ impl Widget for Button {
 		Some(vec2(text_dim.width, text_dim.height + 10.0))
 	}
 	
-	fn update(&mut self, rect: &Rect, hover: bool, mouse: Vec2, font: &Font, win_rect: &Rect) -> Option<Vec2> {
+	fn render_top(&self, rect: &Rect, font: &Font, win_rect: &Rect) -> Option<Vec2> {
 		let text_dim = measure_text(
 			&self.value.to_string(),
 			Some(font),
@@ -80,14 +82,25 @@ impl Widget for Button {
 			1.0
 		);
 		
+		Some(vec2(text_dim.width, text_dim.height + 10.0))
+	}
+	
+	fn update(&mut self, info: &mut UpdateInfo) -> Option<Vec2> {
+		let text_dim = measure_text(
+			&self.value.to_string(),
+			Some(info.font),
+			13,
+			1.0
+		);
+		
 		let rect = Rect::new(
-			rect.x,
-			rect.y + rect.h,
+			info.rect.x,
+			info.rect.y + info.rect.h,
 			text_dim.width + 10.0,
 			text_dim.height + 10.0
 		);
 		
-		if rect.contains(mouse) && hover {
+		if rect.contains(info.mouse) && info.hover && !info.mouse_action.taken {
 			self.hovered = true;
 			if is_mouse_button_pressed(MouseButton::Left) {
 				self.pressed = true;

@@ -1,6 +1,8 @@
 ﻿use std::any::Any;
 use macroquad::prelude::*;
+use crate::ui::mouse_action::WidgetAction;
 use crate::widgets::widget::Widget;
+use crate::widgets::widget_holder::UpdateInfo;
 
 pub struct ImageWidget {
 	texture: Texture2D,
@@ -35,7 +37,11 @@ impl Widget for ImageWidget {
 		Some(self.size)
 	}
 	
-	fn update(&mut self, rect: &Rect, hover: bool, mouse: Vec2, font: &Font, win_rect: &Rect) -> Option<Vec2> {
+	fn render_top(&self, rect: &Rect, font: &Font, win_rect: &Rect) -> Option<Vec2> {
+		Some(self.size)
+	}
+	
+	fn update(&mut self, info: &mut UpdateInfo) -> Option<Vec2> {
 		Some(self.size)
 	}
 }

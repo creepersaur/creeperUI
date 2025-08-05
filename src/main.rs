@@ -21,6 +21,8 @@ async fn main() {
         let win = ui.begin("win");
         win.text((), "Hello World");
         win.button((), "Hello World");
+        
+        win.dropdown((), vec!["Hello World", "Foo", "Bar"], "Foo");
         checked = win.checkbox(generate_id!(), format!("Checked: {checked}"), true).value;
         
         win.slider(generate_id!(), "Slider Int:", SliderInfo::Int {

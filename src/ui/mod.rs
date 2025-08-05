@@ -1,2 +1,2 @@
 ﻿pub(crate) mod windows;
-mod mouse_action;
+pub mod mouse_action;
