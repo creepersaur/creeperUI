@@ -2,7 +2,7 @@
 use macroquad::prelude::*;
 use crate::ui::mouse_action::WidgetAction;
 use crate::widgets::widget::Widget;
-use crate::widgets::widget_holder::UpdateInfo;
+use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
 
 pub struct Button {
 	pub value: String,
@@ -26,17 +26,17 @@ impl Widget for Button {
 	fn as_any(&self) -> &dyn Any { self }
 	fn as_any_mut(&mut self) -> &mut (dyn Any + 'static) { self }
 	
-	fn render(&self, rect: &Rect, font: &Font, win_rect: &Rect) -> Option<Vec2> {
+	fn render(&self, info: &mut RenderInfo) -> Option<Vec2> {
 		let text_dim = measure_text(
 			&self.value.to_string(),
-			Some(font),
+			Some(info.font),
 			13,
 			1.0
 		);
 		
 		draw_rectangle(
 			0.0,
-			rect.h,
+			info.rect.h,
 			text_dim.width + 10.0,
 			text_dim.height + 10.0,
 			match (self.hovered, self.pressed) {
@@ -49,7 +49,7 @@ impl Widget for Button {
 		if self.pressed {
 			draw_rectangle_lines(
 				0.0,
-				rect.h,
+				info.rect.h,
 				text_dim.width + 10.0,
 				text_dim.height + 10.0,
 				2.0,
@@ -61,26 +61,15 @@ impl Widget for Button {
 			draw_text_ex(
 				&self.value.to_string(),
 				5.0,
-				text_dim.height + rect.h + 5.0,
+				text_dim.height + info.rect.h + 5.0,
 				TextParams {
-					font: Some(font),
+					font: Some(info.font),
 					font_size: 13,
 					color: WHITE,
 					..Default::default()
 				}
 			);
 		}
-		
-		Some(vec2(text_dim.width, text_dim.height + 10.0))
-	}
-	
-	fn render_top(&self, rect: &Rect, font: &Font, win_rect: &Rect) -> Option<Vec2> {
-		let text_dim = measure_text(
-			&self.value.to_string(),
-			Some(font),
-			13,
-			1.0
-		);
 		
 		Some(vec2(text_dim.width, text_dim.height + 10.0))
 	}

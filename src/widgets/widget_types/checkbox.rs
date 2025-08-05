@@ -2,7 +2,7 @@
 use macroquad::prelude::*;
 use crate::ui::mouse_action::WidgetAction;
 use crate::widgets::widget::Widget;
-use crate::widgets::widget_holder::UpdateInfo;
+use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
 
 pub struct Checkbox {
 	pub text: String,
@@ -27,10 +27,10 @@ impl Widget for Checkbox {
 	fn as_any(&self) -> &dyn Any { self }
 	fn as_any_mut(&mut self) -> &mut (dyn Any + 'static) { self }
 	
-	fn render(&self, rect: &Rect, font: &Font, win_rect: &Rect) -> Option<Vec2> {
+	fn render(&self, info: &mut RenderInfo) -> Option<Vec2> {
 		let text_dim = measure_text(
 			&self.text.to_string(),
-			Some(font),
+			Some(info.font),
 			13,
 			1.0
 		);
@@ -39,9 +39,9 @@ impl Widget for Checkbox {
 			draw_text_ex(
 				&self.text.to_string(),
 				text_dim.height + 10.0,
-				text_dim.height + rect.h + 2.0,
+				text_dim.height + info.rect.h + 2.0,
 				TextParams {
-					font: Some(font),
+					font: Some(info.font),
 					font_size: 13,
 					color: match self.hovered {
 						true => WHITE,
@@ -54,7 +54,7 @@ impl Widget for Checkbox {
 		
 		draw_rectangle(
 			0.0,
-			rect.h,
+			info.rect.h,
 			text_dim.height + 5.0,
 			text_dim.height + 5.0,
 			match (self.hovered, self.pressed) {
@@ -67,7 +67,7 @@ impl Widget for Checkbox {
 		if self.pressed {
 			draw_rectangle_lines(
 				0.0,
-				rect.h,
+				info.rect.h,
 				text_dim.height + 5.0,
 				text_dim.height + 5.0,
 				2.0,
@@ -78,7 +78,7 @@ impl Widget for Checkbox {
 		if self.value {
 			draw_rectangle(
 				1.0,
-				rect.h + 1.0,
+				info.rect.h + 1.0,
 				text_dim.height + 3.0,
 				text_dim.height + 3.0,
 				Color::new(0.3, 0.7, 1.0, 1.0)
@@ -86,33 +86,22 @@ impl Widget for Checkbox {
 			
 			draw_line(
 				4.0,
-				rect.h + 8.0,
+				info.rect.h + 8.0,
 				6.0,
-				text_dim.height + rect.h + 3.0,
+				text_dim.height + info.rect.h + 3.0,
 				3.0,
 				WHITE
 			);
 			
 			draw_line(
 				6.0,
-				text_dim.height + rect.h + 3.0,
+				text_dim.height + info.rect.h + 3.0,
 				text_dim.height + 2.0,
-				rect.h + 2.0,
+				info.rect.h + 2.0,
 				3.0,
 				WHITE
 			)
 		}
-		
-		Some(vec2(text_dim.width + 10.0 + text_dim.height, text_dim.height + 5.0))
-	}
-	
-	fn render_top(&self, rect: &Rect, font: &Font, win_rect: &Rect) -> Option<Vec2> {
-		let text_dim = measure_text(
-			&self.value.to_string(),
-			Some(font),
-			13,
-			1.0
-		);
 		
 		Some(vec2(text_dim.width + 10.0 + text_dim.height, text_dim.height + 5.0))
 	}

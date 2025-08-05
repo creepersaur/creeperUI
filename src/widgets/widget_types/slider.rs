@@ -3,7 +3,7 @@ use macroquad::input::MouseButton::Left;
 use macroquad::prelude::*;
 use crate::ui::mouse_action::WidgetAction;
 use crate::widgets::widget::Widget;
-use crate::widgets::widget_holder::UpdateInfo;
+use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
 
 pub struct Slider {
 	pub text: String,
@@ -40,10 +40,10 @@ impl Widget for Slider {
 	fn as_any(&self) -> &dyn Any { self }
 	fn as_any_mut(&mut self) -> &mut (dyn Any + 'static) { self }
 	
-	fn render(&self, rect: &Rect, font: &Font, win_rect: &Rect) -> Option<Vec2> {
+	fn render(&self, info: &mut RenderInfo) -> Option<Vec2> {
 		let text_dim = measure_text(
 			&self.text.to_string(),
-			Some(font),
+			Some(info.font),
 			13,
 			1.0
 		);
@@ -52,9 +52,9 @@ impl Widget for Slider {
 			draw_text_ex(
 				&self.text.to_string(),
 				0.0,
-				text_dim.height + rect.h + 5.0,
+				text_dim.height + info.rect.h + 5.0,
 				TextParams {
-					font: Some(font),
+					font: Some(info.font),
 					font_size: 13,
 					color: WHITE,
 					..Default::default()
@@ -63,10 +63,10 @@ impl Widget for Slider {
 		}
 		
 		// BASE BAR
-		let r_width = win_rect.w - text_dim.width - 15.0;
+		let r_width = info.win_rect.w - text_dim.width - 15.0;
 		draw_rectangle(
 			text_dim.width + 5.0,
-			rect.h + 5.0,
+			info.rect.h + 5.0,
 			r_width,
 			text_dim.height + 4.0,
 			match (self.hovered, self.pressed) {
@@ -84,7 +84,7 @@ impl Widget for Slider {
 		
 		draw_rectangle(
 			text_dim.width + 5.0 + (((self.value - min) / (max - min)) as f32) * (r_width - self.value_thickness),
-			rect.h + 5.0,
+			info.rect.h + 5.0,
 			self.value_thickness,
 			text_dim.height + 4.0,
 			Color::new(0.34, 0.54, 0.8, 1.0)
@@ -99,28 +99,15 @@ impl Widget for Slider {
 					_ => String::new()
 				},
 				text_dim.width + 15.0,
-				text_dim.height + rect.h + 5.0,
+				text_dim.height + info.rect.h + 5.0,
 				TextParams {
-					font: Some(font),
+					font: Some(info.font),
 					font_size: 13,
 					color: WHITE,
 					..Default::default()
 				}
 			);
 		}
-		
-		Some(vec2(text_dim.width + r_width, text_dim.height + 10.0))
-	}
-	
-	fn render_top(&self, rect: &Rect, font: &Font, win_rect: &Rect) -> Option<Vec2> {
-		let text_dim = measure_text(
-			&self.text.to_string(),
-			Some(font),
-			13,
-			1.0
-		);
-		
-		let r_width = win_rect.w - text_dim.width - 15.0;
 		
 		Some(vec2(text_dim.width + r_width, text_dim.height + 10.0))
 	}

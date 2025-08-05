@@ -17,6 +17,14 @@ pub struct UpdateInfo<'a> {
     pub win_rect: Rect,
 }
 
+pub struct RenderInfo<'a> {
+    pub rect: Rect,
+    pub cam_1: &'a Camera2D,
+    pub cam_2: &'a Camera2D,
+    pub font: &'a Font,
+    pub win_rect: Rect,
+}
+
 pub struct WidgetHolder {
     widgets: HashMap<String, Box<dyn Widget>>,
     frame_ids: IndexSet<String>,
@@ -49,25 +57,40 @@ impl WidgetHolder {
             scale / rect.w * 200.0,
             scale / (rect.h - title_thickness) * 200.0,
         );
-
-        let target = render_target(rect.w as u32, (rect.h - title_thickness) as u32);
+        
+        let target_1 = render_target(rect.w as u32, (rect.h - title_thickness) as u32);
+        let target_2 = render_target(rect.w as u32, (rect.h - title_thickness) as u32);
         let mut holder_rect = Rect::new(rect.x + 5.0, rect.y + 5.0 + title_thickness, 0.0, 0.0);
-        let target_cam = &Camera2D {
+        let cam_1 = &Camera2D {
             zoom: vec2(zoom_x, zoom_y),
             target: vec2(1.0 / zoom_x, 1.0 / zoom_y),
-            render_target: Some(target.clone()),
+            render_target: Some(target_1.clone()),
+            ..Default::default()
+        };
+        let cam_2 = &Camera2D {
+            zoom: vec2(zoom_x, zoom_y),
+            target: vec2(1.0 / zoom_x, 1.0 / zoom_y),
+            render_target: Some(target_2.clone()),
             ..Default::default()
         };
 
-        set_camera(target_cam);
+        set_camera(cam_1);
         clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
 
         for i in self.frame_ids.iter() {
+            let mut info = RenderInfo {
+                rect: holder_rect,
+                font,
+                cam_1,
+                cam_2,
+                win_rect: *rect,
+            };
+            
             let widget_size = self
                 .widgets
                 .get(i)
                 .unwrap()
-                .render(&holder_rect, font, rect);
+                .render(&mut info);
 
             if let Some(size) = widget_size {
                 holder_rect.h += size.y + 5.0;
@@ -76,12 +99,12 @@ impl WidgetHolder {
                 }
             }
             
-            set_camera(target_cam);
+            set_camera(cam_1);
         }
 
         set_default_camera();
         draw_texture_ex(
-            &target.texture,
+            &target_1.texture,
             rect.x + 5.0,
             rect.y + 5.0 + title_thickness,
             WHITE,
@@ -95,31 +118,8 @@ impl WidgetHolder {
                 ..Default::default()
             },
         );
-
-        set_camera(target_cam);
-        clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
-        holder_rect = Rect::new(rect.x + 5.0, rect.y + 5.0 + title_thickness, 0.0, 0.0);
-
-        for i in self.frame_ids.iter() {
-            let widget_size = self
-                .widgets
-                .get(i)
-                .unwrap()
-                .render_top(&holder_rect, font, rect);
-
-            if let Some(size) = widget_size {
-                holder_rect.h += size.y + 5.0;
-                if holder_rect.w < size.x {
-                    holder_rect.w = size.x
-                }
-            }
-            
-            set_camera(target_cam);
-        }
-
-        set_default_camera();
         draw_texture_ex(
-            &target.texture,
+            &target_2.texture,
             rect.x + 5.0,
             rect.y + 5.0 + title_thickness,
             WHITE,
@@ -151,8 +151,6 @@ impl WidgetHolder {
         let mut mouse_action = WidgetAction::new();
         
         for i in self.frame_ids.iter() {
-            // build a fresh UpdateInfo each iteration,
-            // copying holder_rect into it:
             let mut info = UpdateInfo {
                 rect: holder_rect,        // by value
                 mouse_action: &mut mouse_action,
