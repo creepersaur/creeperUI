@@ -1,7 +1,7 @@
 ﻿use crate::ui::windows::win_resize_handles::WindowResizeHandles;
 use crate::ui::windows::window_info::WindowInfo;
 use crate::ui::windows::window_theme::WindowTheme;
-use crate::ui::mouse_action::MouseAction;
+use crate::ui::mouse_action::{MouseAction, WidgetAction};
 use macroquad::input::MouseButton::Left;
 use macroquad::prelude::*;
 use crate::ui::windows::action_type::ActionType;
@@ -21,6 +21,7 @@ pub struct Window {
     pub open: bool,
     pub active: bool,
     pub hover: bool,
+    pub mouse_action: WidgetAction,
     pub dragging: Option<Vec2>,
     pub resizing: bool,
 }
@@ -41,7 +42,8 @@ impl Window {
             active: false,
             hover: false,
             dragging: None,
-            resizing: false
+            resizing: false,
+            mouse_action: WidgetAction::new(),
         }
     }
 
@@ -122,7 +124,7 @@ impl Window {
             self.draw_titlebar();
         }
 
-        self.widget_holder.render(&self.rect, self.info.show_titlebar, &self.theme.font);
+        let target_3 = self.widget_holder.render(&self.rect, self.info.show_titlebar, &self.theme.font);
         
         // OUTLINE
         draw_rectangle_lines(
@@ -139,6 +141,16 @@ impl Window {
         );
         
         self.draw_resize_handles();
+        
+        draw_texture_ex(
+            &target_3.texture,
+            self.rect.x + 5.0,
+            self.rect.y + 5.0 + self.theme.title_thickness,
+            WHITE,
+            DrawTextureParams {
+                ..Default::default()
+            },
+        );
     }
 
     pub fn draw_titlebar(&self) {
@@ -216,14 +228,18 @@ impl Window {
                 self.active = false;
             }
         }
-
-        self.update_resize_handles(window_action);
-        if !self.resizing {
-            self.handle_close_button(window_action);
+        
+        let mut taken = false;
+        if window_action {
+            let widget_action = self.widget_holder.update(&self.rect, self.info.show_titlebar, hover, self.mouse, &self.theme.font);
+            if widget_action.taken {
+                taken = true;
+            }
         }
         
-        if window_action {
-            self.widget_holder.update(&self.rect, self.info.show_titlebar, hover, self.mouse, &self.theme.font)
+        self.update_resize_handles(window_action, taken);
+        if !self.resizing {
+            self.handle_close_button(window_action);
         }
         
         self.handle_dragging();
@@ -340,8 +356,8 @@ impl Window {
         ));
     }
 
-    fn update_resize_handles(&mut self, window_action: bool) {
-        self.resize_handles.update(&mut self.rect, window_action);
+    fn update_resize_handles(&mut self, window_action: bool, taken: bool) {
+        self.resize_handles.update(&mut self.rect, window_action, taken);
         self.resizing = self.resize_handles.resizing.is_some();
     }
 }

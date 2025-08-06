@@ -157,7 +157,7 @@ impl Widget for Dropdown {
 				}
 			}
 			
-			set_camera(info.cam_2);
+			set_camera(info.cam_3);
 			
 			draw_rectangle(
 				0.0,
@@ -241,7 +241,7 @@ impl Widget for Dropdown {
 					self.item_pressed = true;
 				}
 				
-				if is_mouse_button_released(Left) && self.item_pressed {
+				if is_mouse_button_released(Left) && self.item_pressed && self.item_hovered.is_some() {
 					self.value = self.item_hovered.clone().unwrap();
 				}
 				

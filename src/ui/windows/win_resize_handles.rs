@@ -82,14 +82,14 @@ impl WindowResizeHandles {
 		}
     }
 
-    pub fn update(&mut self, rect: &mut Rect, hover: bool) {
+    pub fn update(&mut self, rect: &mut Rect, hover: bool, taken: bool) {
 		let mouse: Vec2 = mouse_position().into();
 		
 		if self.resizing.is_none() {
 			self.hovering_handle = None;
 		}
 		
-		if hover {
+		if hover && !taken {
 			self.corner_handle(mouse, rect);
 			self.right_handle(mouse, rect);
 			self.bottom_handle(mouse, rect);

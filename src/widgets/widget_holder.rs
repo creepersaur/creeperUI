@@ -21,6 +21,7 @@ pub struct RenderInfo<'a> {
     pub rect: Rect,
     pub cam_1: &'a Camera2D,
     pub cam_2: &'a Camera2D,
+    pub cam_3: &'a Camera2D,
     pub font: &'a Font,
     pub win_rect: Rect,
 }
@@ -46,7 +47,7 @@ impl WidgetHolder {
         self.widgets.retain(|k, _| self.frame_ids.contains(k));
     }
 
-    pub fn render(&self, rect: &Rect, show_titlebar: bool, font: &Font) {
+    pub fn render(&self, rect: &Rect, show_titlebar: bool, font: &Font) -> RenderTarget {
         let scale = 0.01;
 
         let title_thickness = match show_titlebar {
@@ -60,6 +61,7 @@ impl WidgetHolder {
         
         let target_1 = render_target(rect.w as u32, (rect.h - title_thickness) as u32);
         let target_2 = render_target(rect.w as u32, (rect.h - title_thickness) as u32);
+        let target_3 = render_target(screen_width() as u32, screen_height() as u32);
         let mut holder_rect = Rect::new(rect.x + 5.0, rect.y + 5.0 + title_thickness, 0.0, 0.0);
         let cam_1 = &Camera2D {
             zoom: vec2(zoom_x, zoom_y),
@@ -73,6 +75,12 @@ impl WidgetHolder {
             render_target: Some(target_2.clone()),
             ..Default::default()
         };
+        let cam_3 = &Camera2D {
+            zoom: vec2(scale / screen_width() * 200.0, scale / screen_height() * 200.0),
+            target: vec2(1.0 / scale * screen_width() / 200.0, 1.0 / scale * screen_height() / 200.0),
+            render_target: Some(target_3.clone()),
+            ..Default::default()
+        };
 
         set_camera(cam_1);
         clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
@@ -83,6 +91,7 @@ impl WidgetHolder {
                 font,
                 cam_1,
                 cam_2,
+                cam_3,
                 win_rect: *rect,
             };
             
@@ -133,6 +142,8 @@ impl WidgetHolder {
                 ..Default::default()
             },
         );
+        
+        target_3
     }
 
     pub fn update(
@@ -142,7 +153,7 @@ impl WidgetHolder {
         hover: bool,
         mouse: Vec2,
         font: &Font,
-    ) {
+    ) -> WidgetAction {
         let title_thickness = match show_titlebar {
             false => 0.0,
             _ => 30.0,
@@ -167,6 +178,8 @@ impl WidgetHolder {
                 }
             }
         }
+        
+        mouse_action
     }
 }
 
