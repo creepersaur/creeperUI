@@ -14,6 +14,7 @@ use crate::widgets::SliderInfo;
 async fn main() {
     let mut ui = WindowHandler::new().await;
     let mut checked = false;
+    let mut x = 5;
     
     loop {
         set_mouse_cursor(CursorIcon::Default);
@@ -21,18 +22,14 @@ async fn main() {
         let win = ui.begin("win");
         win.text((), "Hello World");
         win.button((), "Hello World");
-        win.dropdown((), vec![
-            "Hello World", "Foo", "Bar",
-            "When you're dueling",
-            "With the knight",
-        ], "Foo");
+        win.dropdown((), (1..=x).map(|x| format!("Option {x}")).collect(), "Option 1");
         checked = win.checkbox(generate_id!(), format!("Checked: {checked}"), true).value;
         
-        win.slider(generate_id!(), "Slider Int:", SliderInfo::Int {
-            min: 0,
-            max: 3,
+        x = win.slider(generate_id!(), "Slider Int:", SliderInfo::Int {
+            min: 1,
+            max: 15,
             default_value: 5
-        });
+        }).value as usize;
         
         win.slider(generate_id!(), "Slider Float:", SliderInfo::Float {
             min: 5.0,

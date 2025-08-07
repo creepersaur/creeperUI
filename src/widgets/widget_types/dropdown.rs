@@ -8,6 +8,7 @@ use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
 pub struct Dropdown {
 	pub value: String,
 	items: Vec<String>,
+	pub scroll_y: f32,
 	
 	pub open: bool,
 	pub hovered: bool,
@@ -22,6 +23,7 @@ impl Dropdown {
 		Self {
 			items,
 			value: default_value,
+			scroll_y: 0.0,
 			
 			open: false,
 			hovered: false,
@@ -131,8 +133,8 @@ impl Widget for Dropdown {
 					if x == &self.items[i] {
 						draw_rectangle(
 							2.0,
-							(text_dim.height + 10.0) * i as f32 + 5.0,
-							text_dim.width + 8.0,
+							(text_dim.height + 10.0) * i as f32 + 5.0 + self.scroll_y,
+							text_dim.width + 7.0,
 							text_dim.height + 10.0,
 							match self.item_pressed {
 								true => Color::new(0.2, 0.4, 0.6, 1.0),
@@ -146,7 +148,7 @@ impl Widget for Dropdown {
 					draw_text_ex(
 						&self.items[i],
 						(text_dim.width - item_text_dim.width) / 2.0 + 5.0,
-						(text_dim.height + 10.0) * i as f32 + text_dim.height + 10.0,
+						(text_dim.height + 10.0) * i as f32 + text_dim.height + 10.0 + self.scroll_y,
 						TextParams {
 							color: WHITE,
 							font: Some(info.font),
@@ -223,6 +225,19 @@ impl Widget for Dropdown {
 		}
 		
 		if self.open {
+			let wheel = mouse_wheel();
+			if wheel.1 != 0.0 {
+				self.scroll_y += wheel.1;
+			} else if wheel.0 != 0.0 {
+				self.scroll_y -= wheel.0;
+			}
+			
+			let n = self.items.len() as f32;
+			self.scroll_y = self.scroll_y.clamp(-(text_dim.height + 10.0) * (n - 5.0).max(0.0) + match n > 5.0 {
+				true => 10.0,
+				_ => 0.0
+			}, 0.0).ceil();
+			
 			let target = render_target(rect.w as u32, info.win_rect.h as u32);
 			
 			let drop_rect = Rect::new(
@@ -247,7 +262,7 @@ impl Widget for Dropdown {
 				
 				self.item_hovered = None;
 				for i in 0..self.items.len() {
-					if base_item_rect.contains(info.mouse) {
+					if base_item_rect.contains(info.mouse - Vec2::Y * self.scroll_y) {
 						self.item_hovered = Some(self.items[i].clone())
 					}
 					
