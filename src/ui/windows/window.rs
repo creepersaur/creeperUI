@@ -244,8 +244,6 @@ impl Window {
             self.handle_close_button(window_action);
         }
         
-        self.widget_holder.ensure_render_targets(&self.rect, self.theme.title_thickness);
-        
         self.handle_dragging();
         
         if let Some(start_offset) = self.dragging {
@@ -254,6 +252,8 @@ impl Window {
         } else if self.resizing {
             self.clamp();
         }
+        
+        self.widget_holder.ensure_render_targets(&self.rect, self.theme.title_thickness);
     }
 
     fn handle_dragging(&mut self) {
@@ -391,7 +391,7 @@ impl Window {
         self.widget_holder.checkbox(id.into(), label.to_string(), default_value)
     }
     
-    pub async fn image(&mut self, id: impl Into<WidgetId>, path: impl ToString, size: Vec2) -> &mut ImageWidget {
+    pub async fn image(&mut self, id: impl Into<WidgetId>, path: impl ToString, size: Option<Vec2>) -> &mut ImageWidget {
         self.widget_holder.image(id.into(), path.to_string(), size).await
     }
     

@@ -6,11 +6,11 @@ use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
 
 pub struct ImageWidget {
 	pub texture: Texture2D,
-	pub size: Vec2,
+	pub size: Option<Vec2>,
 }
 
 impl ImageWidget {
-	pub async fn new(path: String, size: Vec2) -> Self {
+	pub async fn new(path: String, size: Option<Vec2>) -> Self {
 		Self {
 			size,
 			texture: load_texture(&path).await.unwrap()
@@ -29,15 +29,15 @@ impl Widget for ImageWidget {
 			info.rect.h,
 			WHITE,
 			DrawTextureParams {
-				dest_size: Some(self.size),
+				dest_size: self.size,
 				..Default::default()
 			}
 		);
 		
-		Some(self.size)
+		Some(self.size.unwrap_or(self.texture.size()))
 	}
 	
 	fn update(&mut self, info: &mut UpdateInfo) -> Option<Vec2> {
-		Some(self.size)
+		Some(self.size.unwrap_or(self.texture.size()))
 	}
 }

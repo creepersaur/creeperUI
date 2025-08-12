@@ -284,7 +284,7 @@ impl WidgetHolder {
         b
     }
 
-    pub async fn image(&mut self, id: WidgetId, path: String, size: Vec2) -> &mut ImageWidget {
+    pub async fn image(&mut self, id: WidgetId, path: String, size: Option<Vec2>) -> &mut ImageWidget {
         let new_id = create_widget_id("Image", &self.frame_ids, id, &path);
 
         if !self.widgets.contains_key(&new_id) {
@@ -391,7 +391,10 @@ fn create_widget_id(
     
     match id {
         WidgetId::Auto => label.hash(&mut hasher),
-        WidgetId::Explicit(s) => s.hash(&mut hasher),
+        WidgetId::Explicit(s) => {
+            s.hash(&mut hasher);
+            label.hash(&mut hasher);
+        },
     };
     
     let hash = hasher.finish();
