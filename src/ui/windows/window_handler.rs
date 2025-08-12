@@ -84,7 +84,7 @@ impl WindowHandler {
 		}
 	}
 	
-	pub fn queue_removable(&mut self) {
+	pub fn retain(&mut self) {
 		self.windows.retain(|x, _| self.safe_queue.contains(x));
 		self.latest_active.retain(|x| self.safe_queue.contains(x));
 		self.safe_queue.clear();
@@ -99,7 +99,7 @@ impl WindowHandler {
 	pub fn end_windows(&mut self) {
 		self.update();
 		self.render();
-		self.queue_removable();
+		self.retain();
 	}
 }
 

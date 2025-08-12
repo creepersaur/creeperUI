@@ -4,7 +4,6 @@ use crate::ui::windows::window_theme::WindowTheme;
 use crate::ui::mouse_action::{MouseAction, WidgetAction};
 use macroquad::input::MouseButton::Left;
 use macroquad::prelude::*;
-use crate::generate_id;
 use crate::ui::windows::action_type::ActionType;
 use crate::ui::windows::window_handler::WindowId;
 use crate::widgets::widget_holder::WidgetHolder;

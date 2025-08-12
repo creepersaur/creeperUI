@@ -34,7 +34,7 @@ macro_rules! impl_widget_id {
 }
 
 #[macro_export]
-macro_rules! generate_id {
+macro_rules! gen_id {
     () => {
 		format!(
             "{}:{}:{}",
