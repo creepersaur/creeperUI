@@ -46,11 +46,10 @@ async fn main() {
             default_value: 5.0
         });
         
-        win.image((), "src/ten_point.png", vec2(83., 131.)).await;
+        let pic = win.dropdown((), vec!["ten_point", "ten"], "ten_point").value.clone();
+        win.image((), format!("src/{}.png", pic), vec2(83., 131.)).await;
         
         ui.end_windows();
-        
-        println!("Frame time: {:.2}ms", get_frame_time() * 1000.0);
         
         next_frame().await
     }

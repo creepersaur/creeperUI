@@ -32,6 +32,10 @@ pub type WidgetIdNum = u64;
 pub struct WidgetHolder {
     pub(crate) widgets: HashMap<WidgetIdNum, Box<dyn Widget>>,
     pub(crate) frame_ids: IndexSet<WidgetIdNum>,
+    
+    target_1: Option<RenderTarget>,
+    target_2: Option<RenderTarget>,
+    target_3: Option<RenderTarget>,
 }
 
 impl WidgetHolder {
@@ -39,6 +43,10 @@ impl WidgetHolder {
         Self {
             widgets: HashMap::new(),
             frame_ids: IndexSet::new(),
+            
+            target_1: None,
+            target_2: None,
+            target_3: None,
         }
     }
 
@@ -49,8 +57,26 @@ impl WidgetHolder {
     pub fn retain(&mut self) {
         self.widgets.retain(|k, _| self.frame_ids.contains(k));
     }
-
-    pub fn render(&self, rect: &Rect, show_titlebar: bool, font: &Font) -> RenderTarget {
+    
+    pub fn ensure_render_targets(&mut self, rect: &Rect, title_thickness: f32) {
+        let w = rect.w as u32;
+        let h = (rect.h - title_thickness) as u32;
+        
+        if self.target_1.as_ref().map(|t| t.texture.width() as u32 != w).unwrap_or(true) ||
+            self.target_1.as_ref().map(|t| t.texture.height() as u32 != h).unwrap_or(true) {
+            self.target_1 = Some(render_target(w, h));
+            self.target_2 = Some(render_target(w, h));
+        }
+        
+        let sw = screen_width() as u32;
+        let sh = screen_height() as u32;
+        if self.target_3.as_ref().map(|t| t.texture.width() as u32 != sw).unwrap_or(true) ||
+            self.target_3.as_ref().map(|t| t.texture.height() as u32 != sh).unwrap_or(true) {
+            self.target_3 = Some(render_target(sw, sh));
+        }
+    }
+    
+    pub fn render(&self, rect: &Rect, show_titlebar: bool, font: &Font) -> &RenderTarget {
         let scale = 0.01;
 
         let title_thickness = match show_titlebar {
@@ -62,9 +88,10 @@ impl WidgetHolder {
             scale / (rect.h - title_thickness) * 200.0,
         );
         
-        let target_1 = render_target(rect.w as u32, (rect.h - title_thickness) as u32);
-        let target_2 = render_target(rect.w as u32, (rect.h - title_thickness) as u32);
-        let target_3 = render_target(screen_width() as u32, screen_height() as u32);
+        let target_1 = self.target_1.as_ref().unwrap();
+        let target_2 = self.target_2.as_ref().unwrap();
+        let target_3 = self.target_3.as_ref().unwrap();
+        
         let mut holder_rect = Rect::new(rect.x + 5.0, rect.y + 5.0 + title_thickness, 0.0, 0.0);
         let cam_1 = &Camera2D {
             zoom: vec2(zoom_x, zoom_y),
@@ -84,6 +111,9 @@ impl WidgetHolder {
             render_target: Some(target_3.clone()),
             ..Default::default()
         };
+        
+        set_camera(cam_3);
+        clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
 
         set_camera(cam_1);
         clear_background(Color::new(0.0, 0.0, 0.0, 0.0));

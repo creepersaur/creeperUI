@@ -5,13 +5,12 @@ use crate::widgets::widget::Widget;
 use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
 
 pub struct ImageWidget {
-	texture: Texture2D,
-	size: Vec2,
+	pub texture: Texture2D,
+	pub size: Vec2,
 }
 
 impl ImageWidget {
 	pub async fn new(path: String, size: Vec2) -> Self {
-		println!("Loaded image");
 		Self {
 			size,
 			texture: load_texture(&path).await.unwrap()

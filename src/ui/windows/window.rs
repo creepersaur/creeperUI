@@ -124,8 +124,6 @@ impl Window {
         if self.info.show_titlebar {
             self.draw_titlebar();
         }
-
-        let target_3 = self.widget_holder.render(&self.rect, self.info.show_titlebar, &self.theme.font);
         
         // OUTLINE
         draw_rectangle_lines(
@@ -142,6 +140,9 @@ impl Window {
         );
         
         self.draw_resize_handles();
+        
+        // DRAW TOP-LAYER OF WIDGETS
+        let target_3 = self.widget_holder.render(&self.rect, self.info.show_titlebar, &self.theme.font);
         
         draw_texture_ex(
             &target_3.texture,
@@ -242,6 +243,8 @@ impl Window {
         if !self.resizing {
             self.handle_close_button(window_action);
         }
+        
+        self.widget_holder.ensure_render_targets(&self.rect, self.theme.title_thickness);
         
         self.handle_dragging();
         
