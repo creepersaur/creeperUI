@@ -1,14 +1,17 @@
 ﻿use std::collections::HashMap;
+use std::hash::{DefaultHasher, Hash, Hasher};
 use macroquad::miniquad::window::set_mouse_cursor;
 use crate::ui::mouse_action::MouseAction;
 use crate::ui::windows::window::Window;
 use crate::ui::windows::window_theme::WindowTheme;
 use crate::widgets::WidgetId;
 
+pub type WindowId = u64;
+
 pub struct WindowHandler {
-	windows: HashMap<String, Window>,
-	safe_queue: Vec<String>,
-	latest_active: Vec<String>,
+	windows: HashMap<WindowId, Window>,
+	safe_queue: Vec<WindowId>,
+	latest_active: Vec<WindowId>,
 	theme: WindowTheme,
 	mouse_action: MouseAction
 }
@@ -25,14 +28,15 @@ impl WindowHandler {
 	}
 	
 	pub fn begin(&mut self, id: impl ToString) -> &mut Window {
-		self.safe_queue.push(id.to_string());
+		let win_id = create_window_id(&id.to_string());
+		self.safe_queue.push(win_id);
 		
-		if !self.windows.contains_key(&id.to_string()) {
-			self.windows.insert(id.to_string(), Window::new(id.to_string(), self.theme.clone()));
-			self.latest_active.insert(0, id.to_string());
+		if !self.windows.contains_key(&win_id) {
+			self.windows.insert(win_id, Window::new(win_id, self.theme.clone()));
+			self.latest_active.insert(0, win_id);
 		}
 		
-		let w = self.windows.get_mut(&id.to_string()).unwrap();
+		let w = self.windows.get_mut(&win_id).unwrap();
 		w.begin_widgets();
 		w
 	}
@@ -44,7 +48,7 @@ impl WindowHandler {
 		
 		for i in self.latest_active.clone() {
 			let win = self.windows.get_mut(&i).unwrap();
-			let id = win.id.clone();
+			let id = win.id;
 			
 			if win.open {
 				win.update(is_active, self.mouse_action.clone());
@@ -63,7 +67,7 @@ impl WindowHandler {
 		if let Some(active) = active_window {
 			let idx = self.latest_active.iter().position(|x| *x == active).unwrap();
 			self.latest_active.remove(idx);
-			self.latest_active.insert(0, active.clone());
+			self.latest_active.insert(0, active);
 		}
 	}
 	
@@ -97,4 +101,11 @@ impl WindowHandler {
 		self.render();
 		self.queue_removable();
 	}
+}
+
+fn create_window_id(id: &str) -> WindowId {
+	let mut hasher = DefaultHasher::new();
+	id.hash(&mut hasher);
+	
+	hasher.finish()
 }

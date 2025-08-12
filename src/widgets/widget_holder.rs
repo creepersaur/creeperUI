@@ -264,7 +264,7 @@ impl WidgetHolder {
     }
 
     pub fn checkbox(&mut self, id: WidgetId, label: String, value: bool) -> &mut Checkbox {
-        let new_id = create_widget_id("Checkbox", &self.frame_ids, id, &label);
+        let new_id = create_widget_id("Checkbox", &self.frame_ids, id, "");
 
         if !self.widgets.contains_key(&new_id) {
             let w = Checkbox::new(label.clone(), value);

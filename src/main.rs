@@ -24,10 +24,6 @@ async fn main() {
         win.button((), "Hello World");
 
         win.separator();
-        win.text((), "(I added separators ^^^)");
-
-        win.separator().set_color(RED).set_thickness(15.0);
-        win.text((), "(You can even change properties)");
 
         win.dropdown(
             (),
@@ -61,10 +57,15 @@ async fn main() {
             .value
             .clone();
         
-        win.image((), format!("src/{}.png", pic), None)
+        win.image((), format!("src/{}.png", pic), match pic.as_str() {
+            "ten" => Some(vec2(60., 166.)),
+            _ => None,
+        })
             .await;
 
         ui.end_windows();
+        
+        println!("Frame Time: {:2}ms", get_frame_time() * 1000.0);
 
         next_frame().await
     }

@@ -1,6 +1,8 @@
-﻿#[derive(Clone, Debug, PartialEq)]
+﻿use crate::ui::windows::window_handler::WindowId;
+
+#[derive(Clone, Debug, PartialEq)]
 pub enum MouseAction {
-	WindowHover(String),
+	WindowHover(WindowId),
 	Normal
 }
 

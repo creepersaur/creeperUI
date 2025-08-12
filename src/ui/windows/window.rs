@@ -6,11 +6,12 @@ use macroquad::input::MouseButton::Left;
 use macroquad::prelude::*;
 use crate::generate_id;
 use crate::ui::windows::action_type::ActionType;
+use crate::ui::windows::window_handler::WindowId;
 use crate::widgets::widget_holder::WidgetHolder;
 use crate::widgets::*;
 
 pub struct Window {
-    pub id: String,
+    pub id: WindowId,
     pub title: String,
     pub rect: Rect,
     pub widget_holder: WidgetHolder,
@@ -28,10 +29,10 @@ pub struct Window {
 }
 
 impl Window {
-    pub fn new(id: impl ToString, theme: WindowTheme) -> Window {
+    pub fn new(id: WindowId, theme: WindowTheme) -> Window {
         Window {
             theme,
-            id: id.to_string(),
+            id,
             title: "Window".into(),
             rect: Rect::new(0.0, 0.0, 200.0, 150.0),
             info: WindowInfo::new(),
@@ -219,7 +220,7 @@ impl Window {
         self.mouse = mouse_position().into();
 
         let hover = self.rect.contains(self.mouse);
-        let window_action = mouse_action == MouseAction::WindowHover(self.id.clone())
+        let window_action = mouse_action == MouseAction::WindowHover(self.id)
             || mouse_action == MouseAction::Normal;
         self.hover = window_action && hover;
 
