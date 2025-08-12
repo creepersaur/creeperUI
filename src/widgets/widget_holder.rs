@@ -6,6 +6,7 @@ use macroquad::prelude::*;
 use owo_colors::OwoColorize;
 use std::collections::{HashMap, HashSet};
 use std::fmt::format;
+use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ops::Index;
 
 pub struct UpdateInfo<'a> {
@@ -26,9 +27,11 @@ pub struct RenderInfo<'a> {
     pub win_rect: Rect,
 }
 
+pub type WidgetIdNum = u64;
+
 pub struct WidgetHolder {
-    widgets: HashMap<String, Box<dyn Widget>>,
-    frame_ids: IndexSet<String>,
+    pub(crate) widgets: HashMap<WidgetIdNum, Box<dyn Widget>>,
+    pub(crate) frame_ids: IndexSet<WidgetIdNum>,
 }
 
 impl WidgetHolder {
@@ -193,9 +196,9 @@ impl WidgetHolder {
 
         if !self.widgets.contains_key(&new_id) {
             let w = Text::new(label.clone());
-            self.widgets.insert(new_id.clone(), Box::new(w));
+            self.widgets.insert(new_id, Box::new(w));
         }
-        self.frame_ids.insert(new_id.clone());
+        self.frame_ids.insert(new_id);
 
         // UPDATE STATE
         let b: &mut Text = self
@@ -214,9 +217,9 @@ impl WidgetHolder {
 
         if !self.widgets.contains_key(&new_id) {
             let w = Button::new(label.clone());
-            self.widgets.insert(new_id.clone(), Box::new(w));
+            self.widgets.insert(new_id, Box::new(w));
         }
-        self.frame_ids.insert(new_id.clone());
+        self.frame_ids.insert(new_id);
 
         // UPDATE STATE
         let b: &mut Button = self
@@ -235,9 +238,9 @@ impl WidgetHolder {
 
         if !self.widgets.contains_key(&new_id) {
             let w = Checkbox::new(label.clone(), value);
-            self.widgets.insert(new_id.clone(), Box::new(w));
+            self.widgets.insert(new_id, Box::new(w));
         }
-        self.frame_ids.insert(new_id.clone());
+        self.frame_ids.insert(new_id);
 
         // UPDATE STATE
         let b: &mut Checkbox = self
@@ -256,9 +259,9 @@ impl WidgetHolder {
 
         if !self.widgets.contains_key(&new_id) {
             let w = ImageWidget::new(path, size).await;
-            self.widgets.insert(new_id.clone(), Box::new(w));
+            self.widgets.insert(new_id, Box::new(w));
         }
-        self.frame_ids.insert(new_id.clone());
+        self.frame_ids.insert(new_id);
 
         self.widgets
             .get_mut(&new_id)
@@ -269,13 +272,16 @@ impl WidgetHolder {
     }
 
     pub fn slider(&mut self, id: WidgetId, label: String, slider_info: SliderInfo) -> &mut Slider {
-        let new_id = create_widget_id("Slider", &self.frame_ids, id, &label);
+        let new_id = create_widget_id(&format!("Slider<{}>", match slider_info {
+            SliderInfo::Int { min, max, default_value } => "Int",
+            SliderInfo::Float { min, max, default_value } => "Float",
+        }), &self.frame_ids, id, &label);
 
         if !self.widgets.contains_key(&new_id) {
             let w = Slider::new(label.clone(), slider_info);
-            self.widgets.insert(new_id.clone(), Box::new(w));
+            self.widgets.insert(new_id, Box::new(w));
         }
-        self.frame_ids.insert(new_id.clone());
+        self.frame_ids.insert(new_id);
 
         // UPDATE STATE
         let b: &mut Slider = self
@@ -300,9 +306,9 @@ impl WidgetHolder {
 
         if !self.widgets.contains_key(&new_id) {
             let w = Dropdown::new(items, default_value);
-            self.widgets.insert(new_id.clone(), Box::new(w));
+            self.widgets.insert(new_id, Box::new(w));
         }
-        self.frame_ids.insert(new_id.clone());
+        self.frame_ids.insert(new_id);
 
         // UPDATE STATE
         let b: &mut Dropdown = self
@@ -315,27 +321,56 @@ impl WidgetHolder {
         // b.value = label;
         b
     }
+
+    pub fn separator(&mut self, id: WidgetId) -> &mut Separator {
+        let unique = &self.frame_ids.len().to_string();
+        let new_id = create_widget_id(
+            &format!("Separator:{unique}"),
+            &self.frame_ids,
+            id,
+            unique
+        );
+        
+        if !self.widgets.contains_key(&new_id) {
+            let w = Separator::new();
+            self.widgets.insert(new_id, Box::new(w));
+        }
+        self.frame_ids.insert(new_id);
+        
+        let b: &mut Separator = self
+            .widgets
+            .get_mut(&new_id)
+            .unwrap()
+            .as_any_mut()
+            .downcast_mut()
+            .unwrap();
+        
+        b
+    }
 }
 
 fn create_widget_id(
     widget_type: &str,
-    frame_ids: &IndexSet<String>,
+    frame_ids: &IndexSet<WidgetIdNum>,
     id: WidgetId,
-    label: &String,
-) -> String {
-    let mut new_id = format!("{widget_type}:");
-
-    new_id.push_str(
-        match id {
-            WidgetId::Auto => label.clone(),
-            WidgetId::Explicit(s) => s,
-        }
-        .as_str(),
-    );
-
-    if frame_ids.contains(&new_id) {
-        panic!("Widget with id/label: {new_id} already exists. Please give a unique explicit ID.");
+    label: &str,
+) -> WidgetIdNum {
+    // Generate a hash based on a widget type + label + explicit/auto ID
+    let mut hasher = DefaultHasher::new();
+    widget_type.hash(&mut hasher);
+    
+    match id {
+        WidgetId::Auto => label.hash(&mut hasher),
+        WidgetId::Explicit(s) => s.hash(&mut hasher),
+    };
+    
+    let hash = hasher.finish();
+    
+    if frame_ids.contains(&hash) {
+        panic!(
+            "Widget with this type/label already exists. Please give a unique explicit ID."
+        );
     }
-
-    new_id
+    
+    hash
 }

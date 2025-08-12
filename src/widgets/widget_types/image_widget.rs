@@ -11,6 +11,7 @@ pub struct ImageWidget {
 
 impl ImageWidget {
 	pub async fn new(path: String, size: Vec2) -> Self {
+		println!("Loaded image");
 		Self {
 			size,
 			texture: load_texture(&path).await.unwrap()
