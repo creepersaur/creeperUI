@@ -9,12 +9,18 @@ pub struct WindowInfo {
 	pub ran_once: bool,
 	pub min_size: Vec2,
 	pub show_titlebar: bool,
+	pub draggable: bool,
+	pub resizable: bool,
+	pub closable: bool,
 }
 
 impl WindowInfo {
 	pub fn new() -> WindowInfo {
 		WindowInfo {
 			show_titlebar: true,
+			draggable: true,
+			resizable: true,
+			closable: true,
 			
 			..Default::default()
 		}

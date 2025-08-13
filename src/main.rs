@@ -1,4 +1,4 @@
-// #![allow(unused)]
+#![allow(unused)]
 mod ui;
 mod widgets;
 
@@ -16,7 +16,10 @@ async fn main() {
     loop {
         // test_window(&mut ui, &mut checked, &mut x).await;
         
-        if ui.begin("").button((), "Hello").clicked {
+        if ui.begin("")
+            .set_resizable(false)
+            .set_closable(false)
+            .button((), "Hello").clicked {
             println!("Yes");
         };
         

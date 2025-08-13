@@ -83,7 +83,22 @@ impl Window {
         
         self
     }
-
+    
+    pub fn set_draggable(&mut self, draggable: bool) -> &mut Window {
+        self.info.draggable = draggable;
+        self
+    }
+    
+    pub fn set_resizable(&mut self, resizable: bool) -> &mut Window {
+        self.info.resizable = resizable;
+        self
+    }
+    
+    pub fn set_closable(&mut self, closable: bool) -> &mut Window {
+        self.info.closable = closable;
+        self
+    }
+    
     pub fn close(&mut self) -> &mut Window {
         self.open = false;
         self
@@ -180,7 +195,9 @@ impl Window {
             },
         );
 
-        self.draw_close_button();
+        if self.info.closable {
+            self.draw_close_button();
+        }
     }
 
     pub fn draw_close_button(&self) {
@@ -241,12 +258,16 @@ impl Window {
             }
         }
         
-        self.update_resize_handles(window_action, self.taken);
-        if !self.resizing {
+        if self.info.resizable {
+            self.update_resize_handles(window_action, self.taken);
+        }
+        if !self.resizing && self.info.closable {
             self.handle_close_button(window_action);
         }
         
-        self.handle_dragging();
+        if self.info.draggable {
+            self.handle_dragging();
+        }
         
         if let Some(start_offset) = self.dragging {
             self.set_pos(self.mouse + start_offset, ActionType::EachFrame);
