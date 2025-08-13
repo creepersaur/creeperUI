@@ -15,6 +15,7 @@ pub struct Window {
     pub rect: Rect,
     pub widget_holder: WidgetHolder,
     pub info: WindowInfo,
+    pub taken: bool,
     theme: WindowTheme,
     resize_handles: WindowResizeHandles,
 
@@ -32,6 +33,7 @@ impl Window {
         Window {
             theme,
             id,
+            taken: false,
             title: "Window".into(),
             rect: Rect::new(0.0, 0.0, 200.0, 150.0),
             info: WindowInfo::new(),
@@ -82,9 +84,9 @@ impl Window {
         self
     }
 
-    pub fn close(&mut self) {
+    pub fn close(&mut self) -> &mut Window {
         self.open = false;
-        
+        self
     }
 
     pub fn show(&mut self) {
@@ -231,15 +233,15 @@ impl Window {
             }
         }
         
-        let mut taken = false;
+        self.taken = false;
         if window_action {
             let widget_action = self.widget_holder.update(&self.rect, self.info.show_titlebar, hover, self.mouse, &self.theme.font);
             if widget_action.taken {
-                taken = true;
+                self.taken = true;
             }
         }
         
-        self.update_resize_handles(window_action, taken);
+        self.update_resize_handles(window_action, self.taken);
         if !self.resizing {
             self.handle_close_button(window_action);
         }
@@ -253,7 +255,10 @@ impl Window {
             self.clamp();
         }
         
-        self.widget_holder.ensure_render_targets(&self.rect, self.theme.title_thickness);
+        self.widget_holder.ensure_render_targets(&self.rect, match self.info.show_titlebar {
+            false => 0.0,
+            _ => self.theme.title_thickness,
+        });
     }
 
     fn handle_dragging(&mut self) {
@@ -379,8 +384,8 @@ impl Window {
         self.widget_holder.retain();
     }
     
-    pub fn text(&mut self, id: impl Into<WidgetId>, label: impl ToString) -> &mut Text {
-        self.widget_holder.text(id.into(), label.to_string())
+    pub fn text(&mut self, label: impl ToString) -> &mut Text {
+        self.widget_holder.text(().into(), label.to_string())
     }
     
     pub fn button(&mut self, id: impl Into<WidgetId>, label: impl ToString) -> &mut Button {

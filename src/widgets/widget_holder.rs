@@ -238,7 +238,6 @@ impl WidgetHolder {
             .as_any_mut()
             .downcast_mut()
             .unwrap();
-        b.value = label;
         b
     }
 

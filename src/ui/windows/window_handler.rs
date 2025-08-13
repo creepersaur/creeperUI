@@ -1,5 +1,6 @@
 ﻿use std::collections::HashMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
+use macroquad::miniquad::CursorIcon;
 use macroquad::miniquad::window::set_mouse_cursor;
 use crate::ui::mouse_action::MouseAction;
 use crate::ui::windows::window::Window;
@@ -41,9 +42,10 @@ impl WindowHandler {
 		w
 	}
 	
-	pub fn update(&mut self) {
+	pub fn update(&mut self) -> bool {
 		let mut is_active = false;
 		let mut active_window = None;
+		let mut taken = false;
 		self.mouse_action = MouseAction::Normal;
 		
 		for i in self.latest_active.clone() {
@@ -53,13 +55,17 @@ impl WindowHandler {
 			if win.open {
 				win.update(is_active, self.mouse_action.clone());
 				
-				if win.hover || win.resizing {
+				if win.hover || win.resizing || win.taken {
 					self.mouse_action = MouseAction::WindowHover(id);
 				}
 				
 				if win.active {
 					is_active = true;
 					active_window = Some(i);
+				}
+				
+				if win.taken {
+					taken = true;
 				}
 			}
 		}
@@ -69,6 +75,8 @@ impl WindowHandler {
 			self.latest_active.remove(idx);
 			self.latest_active.insert(0, active);
 		}
+		
+		taken
 	}
 	
 	pub fn render(&mut self) {
@@ -96,8 +104,13 @@ impl WindowHandler {
 		}
 	}
 	
+	pub fn start_windows(&mut self) -> bool {
+		set_mouse_cursor(CursorIcon::Default);
+		
+		self.update() || self.mouse_action != MouseAction::Normal
+	}
+	
 	pub fn end_windows(&mut self) {
-		self.update();
 		self.render();
 		self.retain();
 	}
