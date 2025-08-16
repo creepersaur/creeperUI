@@ -65,7 +65,15 @@ impl Widget for TabHolder {
 					info.rect.h,
 					info.win_rect.w / length as f32,
 					30.0,
-					Color::new(0.2, 0.55, 0.85, 0.2)
+					Color::new(0.2, 0.5, 0.9, 0.2)
+				);
+				draw_rectangle_lines(
+					i as f32 * info.win_rect.w / length as f32 - 4.0,
+					info.rect.h,
+					info.win_rect.w / length as f32,
+					30.0,
+					2.0,
+					Color::new(1.,1.,1.,0.5)
 				);
 			}
 			if self.value == i {

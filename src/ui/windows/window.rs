@@ -42,7 +42,7 @@ impl Window {
             
             open: true,
             mouse: mouse_position().into(),
-            active: false,
+            active: true,
             hover: false,
             dragging: None,
             resizing: false,
@@ -235,6 +235,9 @@ impl Window {
 
 impl Window {
     pub fn update(&mut self, active_taken: bool, mouse_action: MouseAction) {
+        if active_taken {
+            self.active = false;
+        }
         self.mouse = mouse_position().into();
 
         let hover = self.rect.contains(self.mouse);

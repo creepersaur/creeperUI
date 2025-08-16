@@ -14,14 +14,15 @@ async fn main() {
     let mut x = 5;
     
     loop {
-        // test_window(&mut ui, &mut checked, &mut x).await;
-        
         let win = ui.begin("win").set_size(vec2(400.0, 200.0), ActionType::Once);
-        win.separator();
-        let tab = win.tabs(gen_id!(), vec![0; 4], 0).allow_holding().value;
+        let tab = win.tabs(gen_id!(), vec!["...", "Test Window"], 0).value;
         
-        win.separator();
-        win.text(format!("You're on tab: {}", tab));
+        if tab == 1 {
+            win.text("Opened a different window");
+            test_window(&mut ui, &mut checked, &mut x).await;
+        } else {
+            win.text("Hello World");
+        }
         
         ui.start_windows();
         ui.end_windows();
@@ -33,7 +34,7 @@ async fn main() {
 
 
 async fn test_window(ui: &mut WindowHandler, checked: &mut bool, x: &mut usize) {
-    let win = ui.begin("win").set_size(vec2(400., 400.), ActionType::Once);
+    let win = ui.begin("").set_size(vec2(400., 400.), ActionType::Once);
     win.text("Hello World");
     win.button((), "Hello World");
     
@@ -44,7 +45,7 @@ async fn test_window(ui: &mut WindowHandler, checked: &mut bool, x: &mut usize) 
         (1..=*x).map(|x| format!("Option {x}")).collect(),
         "Option 1",
     );
-    *checked = win.checkbox((), format!("Checked: {checked}"), true).value;
+    *checked = win.checkbox((), format!("Checked: {checked}"), *checked).value;
     
     win.separator();
     
