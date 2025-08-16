@@ -5,6 +5,7 @@ mod image_widget;
 mod slider;
 mod dropdown;
 mod separator;
+mod progress_bar;
 
 pub use text::Text;
 pub use button::Button;
@@ -13,3 +14,4 @@ pub use image_widget::ImageWidget;
 pub use slider::{Slider, SliderInfo};
 pub use dropdown::Dropdown;
 pub use separator::Separator;
+pub use progress_bar::{ProgressBar, ProgressInfo};

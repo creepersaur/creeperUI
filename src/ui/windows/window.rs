@@ -425,6 +425,10 @@ impl Window {
         self.widget_holder.slider(id.into(), label.to_string(), slider_info)
     }
     
+    pub fn progress_bar(&mut self, id: impl Into<WidgetId>, label: impl ToString, progress_info: ProgressInfo) -> &mut ProgressBar {
+        self.widget_holder.progress_bar(id.into(), label.to_string(), progress_info)
+    }
+    
     pub fn dropdown(&mut self, id: impl Into<WidgetId>, items: Vec<impl ToString>, default_value: impl ToString) -> &mut Dropdown {
         let stringed_items: Vec<_> = items.iter().map(|x| x.to_string()).collect();
         let stringed_value = default_value.to_string();

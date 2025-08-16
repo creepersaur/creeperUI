@@ -74,6 +74,10 @@ impl WidgetHolder {
             self.target_3.as_ref().map(|t| t.texture.height() as u32 != sh).unwrap_or(true) {
             self.target_3 = Some(render_target(sw, sh));
         }
+        
+        self.target_1.clone().unwrap().texture.set_filter(FilterMode::Nearest);
+        self.target_2.clone().unwrap().texture.set_filter(FilterMode::Nearest);
+        self.target_3.clone().unwrap().texture.set_filter(FilterMode::Nearest);
     }
     
     pub fn render(&self, rect: &Rect, show_titlebar: bool, font: &Font) -> &RenderTarget {
@@ -374,6 +378,31 @@ impl WidgetHolder {
             .downcast_mut()
             .unwrap();
         
+        b
+    }
+    
+    
+    pub fn progress_bar(&mut self, id: WidgetId, label: String, progress_info: ProgressInfo) -> &mut ProgressBar {
+        let new_id = create_widget_id(&format!("ProgressBar<{}>", match progress_info {
+            ProgressInfo::Int { min, max, default_value } => "Int",
+            ProgressInfo::Float { min, max, default_value } => "Float",
+        }), &self.frame_ids, id, &label);
+        
+        if !self.widgets.contains_key(&new_id) {
+            let w = ProgressBar::new(label.clone(), progress_info);
+            self.widgets.insert(new_id, Box::new(w));
+        }
+        self.frame_ids.insert(new_id);
+        
+        // UPDATE STATE
+        let b: &mut ProgressBar = self
+            .widgets
+            .get_mut(&new_id)
+            .unwrap()
+            .as_any_mut()
+            .downcast_mut()
+            .unwrap();
+        b.text = label;
         b
     }
 }

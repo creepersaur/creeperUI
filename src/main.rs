@@ -3,7 +3,7 @@ mod ui;
 mod widgets;
 
 use crate::ui::windows::action_type::ActionType;
-use crate::widgets::SliderInfo;
+use crate::widgets::{ProgressInfo, SliderInfo};
 use macroquad::prelude::*;
 use ui::windows::window_handler::WindowHandler;
 
@@ -14,14 +14,7 @@ async fn main() {
     let mut x = 5;
 
     loop {
-        // test_window(&mut ui, &mut checked, &mut x).await;
-        
-        if ui.begin("")
-            .set_resizable(false)
-            .set_closable(false)
-            .button((), "Hello").clicked {
-            println!("Yes");
-        };
+        test_window(&mut ui, &mut checked, &mut x).await;
         
         ui.start_windows();
         ui.end_windows();
@@ -45,6 +38,14 @@ async fn test_window(ui: &mut WindowHandler, checked: &mut bool, x: &mut usize) 
         "Option 1",
     );
     *checked = win.checkbox((), format!("Checked: {checked}"), true).value;
+    
+    win.separator();
+    
+    win.progress_bar((), "Progress bar:", ProgressInfo::Float {
+        min: 0.0,
+        max: 100.0,
+        default_value: 50.0,
+    }).value = (mouse_position().0 / screen_width()) as f64 * 100.0;
     
     *x = win.slider(
         (),
