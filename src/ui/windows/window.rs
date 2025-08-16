@@ -443,4 +443,8 @@ impl Window {
     pub fn separator(&mut self) -> &mut Separator {
         self.widget_holder.separator(WidgetId::Auto)
     }
+    
+    pub fn tabs(&mut self, id: impl Into<WidgetId>, tabs: Vec<impl ToString>, default_tab: usize) -> &mut TabHolder {
+        self.widget_holder.tabs(id.into(), tabs.iter().map(|x| x.to_string()).collect(), default_tab)
+    }
 }

@@ -12,14 +12,21 @@ async fn main() {
     let mut ui = WindowHandler::new().await;
     let mut checked = false;
     let mut x = 5;
-
+    
     loop {
-        test_window(&mut ui, &mut checked, &mut x).await;
+        // test_window(&mut ui, &mut checked, &mut x).await;
+        
+        let win = ui.begin("win").set_size(vec2(400.0, 200.0), ActionType::Once);
+        win.separator();
+        let tab = win.tabs(gen_id!(), vec![0; 4], 0).allow_holding().value;
+        
+        win.separator();
+        win.text(format!("You're on tab: {}", tab));
         
         ui.start_windows();
         ui.end_windows();
         
-        // println!("Frame Time: {:2}ms", get_frame_time() * 1000.0);
+        println!("Frame Time: {:2}ms", get_frame_time() * 1000.0);
         next_frame().await
     }
 }
