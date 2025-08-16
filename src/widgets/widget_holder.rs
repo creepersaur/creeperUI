@@ -381,7 +381,6 @@ impl WidgetHolder {
         b
     }
     
-    
     pub fn progress_bar(&mut self, id: WidgetId, label: String, progress_info: ProgressInfo) -> &mut ProgressBar {
         let new_id = create_widget_id(&format!("ProgressBar<{}>", match progress_info {
             ProgressInfo::Int { min, max, default_value } => "Int",
@@ -403,6 +402,26 @@ impl WidgetHolder {
             .downcast_mut()
             .unwrap();
         b.text = label;
+        b
+    }
+
+    pub fn tabs(&mut self, id: WidgetId, tabs: Vec<String>, default_tab: usize) -> &mut TabHolder {
+        let new_id = create_widget_id("TabHolder", &self.frame_ids, id, &tabs.join("|"));
+        
+        if !self.widgets.contains_key(&new_id) {
+            let w = TabHolder::new(tabs, default_tab);
+            self.widgets.insert(new_id, Box::new(w));
+        }
+        self.frame_ids.insert(new_id);
+        
+        // UPDATE STATE
+        let b: &mut TabHolder = self
+            .widgets
+            .get_mut(&new_id)
+            .unwrap()
+            .as_any_mut()
+            .downcast_mut()
+            .unwrap();
         b
     }
 }

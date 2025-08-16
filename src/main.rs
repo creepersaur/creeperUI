@@ -12,14 +12,36 @@ async fn main() {
     let mut ui = WindowHandler::new().await;
     let mut checked = false;
     let mut x = 5;
-
+    
     loop {
-        test_window(&mut ui, &mut checked, &mut x).await;
+        // test_window(&mut ui, &mut checked, &mut x).await;
+        
+        let win = ui.begin("win").set_size(vec2(400.0, 200.0), ActionType::Once);
+        let tabs = win.tabs((), vec!["hello", "world", "foo", "bar"], 0);
+        
+        match tabs.value {
+            0 => {
+                win.text("This is tab one");
+            }
+            1 => {
+                win.text("This is tab 2");
+                win.text("Here, have a");
+                win.button((), "Button");
+            }
+            2 => {
+                win.text("It's TV TIME!");
+                win.image((), "src/ten_point.png", None).await;
+            }
+            
+            _ => {
+                win.text("Theres.... Nothing here :(");
+            }
+        }
         
         ui.start_windows();
         ui.end_windows();
         
-        // println!("Frame Time: {:2}ms", get_frame_time() * 1000.0);
+        println!("Frame Time: {:2}ms", get_frame_time() * 1000.0);
         next_frame().await
     }
 }
