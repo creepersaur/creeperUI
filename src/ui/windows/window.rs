@@ -1,4 +1,5 @@
-﻿use crate::ui::windows::win_resize_handles::WindowResizeHandles;
+﻿use std::any::Any;
+use crate::ui::windows::win_resize_handles::WindowResizeHandles;
 use crate::ui::windows::window_info::WindowInfo;
 use crate::ui::windows::window_theme::WindowTheme;
 use crate::ui::mouse_action::{MouseAction, WidgetAction};
@@ -96,6 +97,11 @@ impl Window {
     
     pub fn set_closable(&mut self, closable: bool) -> &mut Window {
         self.info.closable = closable;
+        self
+    }
+    
+    pub fn set_active(&mut self, active: bool) -> &mut Window {
+        self.active = active;
         self
     }
     
@@ -407,6 +413,16 @@ impl Window {
     pub fn end_widgets(&mut self) {
         self.widget_holder.retain();
     }
+    
+    pub fn scope<F, R>(&mut self, f: F) -> &mut Window
+    where
+        F: Fn(&mut Window) -> R
+    {
+        f(self);
+        self
+    }
+    
+    // WIDGET TYPES
     
     pub fn text(&mut self, label: impl ToString) -> &mut Text {
         self.widget_holder.text(().into(), label.to_string())
