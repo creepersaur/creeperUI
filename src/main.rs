@@ -1,31 +1,23 @@
 #![allow(unused)]
-mod ui;
-mod widgets;
-
-use crate::ui::windows::action_type::ActionType;
-use crate::widgets::{ProgressInfo, SliderInfo};
 use macroquad::prelude::*;
-use ui::windows::{window::Window, window_handler::WindowHandler};
+use creeperUI::{UI, Window, WindowHandler, ActionType, ProgressInfo, SliderInfo};
 
 #[macroquad::main("Hello")]
 async fn main() {
-    let mut ui = WindowHandler::new().await;
+    let mut ui = UI::new().await;
     let mut checked = false;
     let mut x = 5;
     
     loop {
-        ui.begin("main").scope_async(async |win| {
-            test_window(win, &mut checked, &mut x).await
-        }).await;
+        let win = ui.begin("id");
+        test_window(win, &mut checked, &mut x).await;
         
-        ui.start_windows();
-        ui.end_windows();
+        ui.draw();
         
         println!("Frame Time: {:2}ms", get_frame_time() * 1000.0);
         next_frame().await
     }
 }
-
 
 async fn test_window(win: &mut Window, checked: &mut bool, x: &mut usize) {
     win.set_size(vec2(400., 400.), ActionType::Once);

@@ -2,8 +2,13 @@
 name = "creeperUI"
 version = "0.1.0"
 edition = "2021"
+description = "An imgui inspired Immediate mode GUI library for Macroquad."
+license = "MIT"
 
 [dependencies]
 macroquad = "*"
 indexmap = "2"
 owo-colors = "*"
+
+[profile.release]
+opt-level = 3
