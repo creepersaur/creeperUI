@@ -1,4 +1,4 @@
-﻿use crate::ui::mouse_action::{MouseAction, WidgetAction};
+use crate::ui::mouse_action::{MouseAction, WidgetAction};
 use crate::ui::windows::action_type::ActionType;
 use crate::widgets::*;
 use indexmap::IndexSet;
@@ -14,7 +14,7 @@ pub struct UpdateInfo<'a> {
     pub mouse_action: &'a mut WidgetAction,
     pub hover: bool,
     pub mouse: Vec2,
-    pub font: &'a Font,
+    pub font: &'a Option<Font>,
     pub win_rect: Rect,
 }
 
@@ -23,7 +23,7 @@ pub struct RenderInfo<'a> {
     pub cam_1: &'a Camera2D,
     pub cam_2: &'a Camera2D,
     pub cam_3: &'a Camera2D,
-    pub font: &'a Font,
+    pub font: &'a Option<Font>,
     pub win_rect: Rect,
 }
 
@@ -32,7 +32,7 @@ pub type WidgetIdNum = u64;
 pub struct WidgetHolder {
     pub(crate) widgets: HashMap<WidgetIdNum, Box<dyn Widget>>,
     pub(crate) frame_ids: IndexSet<WidgetIdNum>,
-    
+
     target_1: Option<RenderTarget>,
     target_2: Option<RenderTarget>,
     target_3: Option<RenderTarget>,
@@ -43,7 +43,7 @@ impl WidgetHolder {
         Self {
             widgets: HashMap::new(),
             frame_ids: IndexSet::new(),
-            
+
             target_1: None,
             target_2: None,
             target_3: None,
@@ -57,30 +57,60 @@ impl WidgetHolder {
     pub fn retain(&mut self) {
         self.widgets.retain(|k, _| self.frame_ids.contains(k));
     }
-    
+
     pub fn ensure_render_targets(&mut self, rect: &Rect, title_thickness: f32) {
         let w = rect.w as u32;
         let h = (rect.h - title_thickness) as u32;
-        
-        if self.target_1.as_ref().map(|t| t.texture.width() as u32 != w).unwrap_or(true) ||
-            self.target_1.as_ref().map(|t| t.texture.height() as u32 != h).unwrap_or(true) {
+
+        if self
+            .target_1
+            .as_ref()
+            .map(|t| t.texture.width() as u32 != w)
+            .unwrap_or(true)
+            || self
+                .target_1
+                .as_ref()
+                .map(|t| t.texture.height() as u32 != h)
+                .unwrap_or(true)
+        {
             self.target_1 = Some(render_target(w, h));
             self.target_2 = Some(render_target(w, h));
         }
-        
+
         let sw = screen_width() as u32;
         let sh = screen_height() as u32;
-        if self.target_3.as_ref().map(|t| t.texture.width() as u32 != sw).unwrap_or(true) ||
-            self.target_3.as_ref().map(|t| t.texture.height() as u32 != sh).unwrap_or(true) {
+        if self
+            .target_3
+            .as_ref()
+            .map(|t| t.texture.width() as u32 != sw)
+            .unwrap_or(true)
+            || self
+                .target_3
+                .as_ref()
+                .map(|t| t.texture.height() as u32 != sh)
+                .unwrap_or(true)
+        {
             self.target_3 = Some(render_target(sw, sh));
         }
-        
-        self.target_1.clone().unwrap().texture.set_filter(FilterMode::Nearest);
-        self.target_2.clone().unwrap().texture.set_filter(FilterMode::Nearest);
-        self.target_3.clone().unwrap().texture.set_filter(FilterMode::Nearest);
+
+        self.target_1
+            .clone()
+            .unwrap()
+            .texture
+            .set_filter(FilterMode::Nearest);
+        self.target_2
+            .clone()
+            .unwrap()
+            .texture
+            .set_filter(FilterMode::Nearest);
+        self.target_3
+            .clone()
+            .unwrap()
+            .texture
+            .set_filter(FilterMode::Nearest);
     }
-    
-    pub fn render(&self, rect: &Rect, show_titlebar: bool, font: &Font) -> &RenderTarget {
+
+    pub fn render(&self, rect: &Rect, show_titlebar: bool, font: &Option<Font>) -> &RenderTarget {
         let scale = 0.01;
 
         let title_thickness = match show_titlebar {
@@ -91,11 +121,11 @@ impl WidgetHolder {
             scale / rect.w * 200.0,
             scale / (rect.h - title_thickness) * 200.0,
         );
-        
+
         let target_1 = self.target_1.as_ref().unwrap();
         let target_2 = self.target_2.as_ref().unwrap();
         let target_3 = self.target_3.as_ref().unwrap();
-        
+
         let mut holder_rect = Rect::new(rect.x + 5.0, rect.y + 5.0 + title_thickness, 0.0, 0.0);
         let cam_1 = &Camera2D {
             zoom: vec2(zoom_x, zoom_y),
@@ -110,12 +140,18 @@ impl WidgetHolder {
             ..Default::default()
         };
         let cam_3 = &Camera2D {
-            zoom: vec2(scale / screen_width() * 200.0, scale / screen_height() * 200.0),
-            target: vec2(1.0 / scale * screen_width() / 200.0, 1.0 / scale * screen_height() / 200.0),
+            zoom: vec2(
+                scale / screen_width() * 200.0,
+                scale / screen_height() * 200.0,
+            ),
+            target: vec2(
+                1.0 / scale * screen_width() / 200.0,
+                1.0 / scale * screen_height() / 200.0,
+            ),
             render_target: Some(target_3.clone()),
             ..Default::default()
         };
-        
+
         set_camera(cam_3);
         clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
 
@@ -131,12 +167,8 @@ impl WidgetHolder {
                 cam_3,
                 win_rect: *rect,
             };
-            
-            let widget_size = self
-                .widgets
-                .get(i)
-                .unwrap()
-                .render(&mut info);
+
+            let widget_size = self.widgets.get(i).unwrap().render(&mut info);
 
             if let Some(size) = widget_size {
                 holder_rect.h += size.y + 5.0;
@@ -144,7 +176,7 @@ impl WidgetHolder {
                     holder_rect.w = size.x
                 }
             }
-            
+
             set_camera(cam_1);
         }
 
@@ -179,7 +211,7 @@ impl WidgetHolder {
                 ..Default::default()
             },
         );
-        
+
         target_3
     }
 
@@ -189,7 +221,7 @@ impl WidgetHolder {
         show_titlebar: bool,
         hover: bool,
         mouse: Vec2,
-        font: &Font,
+        font: &Option<Font>,
     ) -> WidgetAction {
         let title_thickness = match show_titlebar {
             false => 0.0,
@@ -197,15 +229,15 @@ impl WidgetHolder {
         };
         let mut holder_rect = Rect::new(rect.x + 5.0, rect.y + 5.0 + title_thickness, 0.0, 0.0);
         let mut mouse_action = WidgetAction::new();
-        
+
         for i in self.frame_ids.iter() {
             let mut info = UpdateInfo {
-                rect: holder_rect,        // by value
+                rect: holder_rect, // by value
                 mouse_action: &mut mouse_action,
                 hover,
                 mouse,
                 font,
-                win_rect: *rect,          // also by value
+                win_rect: *rect, // also by value
             };
 
             if let Some(size) = self.widgets.get_mut(i).unwrap().update(&mut info) {
@@ -215,7 +247,7 @@ impl WidgetHolder {
                 }
             }
         }
-        
+
         mouse_action
     }
 }
@@ -287,7 +319,12 @@ impl WidgetHolder {
         b
     }
 
-    pub async fn image(&mut self, id: WidgetId, path: String, size: Option<Vec2>) -> &mut ImageWidget {
+    pub async fn image(
+        &mut self,
+        id: WidgetId,
+        path: String,
+        size: Option<Vec2>,
+    ) -> &mut ImageWidget {
         let new_id = create_widget_id("Image", &self.frame_ids, id, &path);
 
         if !self.widgets.contains_key(&new_id) {
@@ -305,10 +342,26 @@ impl WidgetHolder {
     }
 
     pub fn slider(&mut self, id: WidgetId, label: String, slider_info: SliderInfo) -> &mut Slider {
-        let new_id = create_widget_id(&format!("Slider<{}>", match slider_info {
-            SliderInfo::Int { min, max, default_value } => "Int",
-            SliderInfo::Float { min, max, default_value } => "Float",
-        }), &self.frame_ids, id, &label);
+        let new_id = create_widget_id(
+            &format!(
+                "Slider<{}>",
+                match slider_info {
+                    SliderInfo::Int {
+                        min,
+                        max,
+                        default_value,
+                    } => "Int",
+                    SliderInfo::Float {
+                        min,
+                        max,
+                        default_value,
+                    } => "Float",
+                }
+            ),
+            &self.frame_ids,
+            id,
+            &label,
+        );
 
         if !self.widgets.contains_key(&new_id) {
             let w = Slider::new(label.clone(), slider_info);
@@ -357,19 +410,14 @@ impl WidgetHolder {
 
     pub fn separator(&mut self, id: WidgetId) -> &mut Separator {
         let unique = &self.frame_ids.len().to_string();
-        let new_id = create_widget_id(
-            &format!("Separator:{unique}"),
-            &self.frame_ids,
-            id,
-            unique
-        );
-        
+        let new_id = create_widget_id(&format!("Separator:{unique}"), &self.frame_ids, id, unique);
+
         if !self.widgets.contains_key(&new_id) {
             let w = Separator::new();
             self.widgets.insert(new_id, Box::new(w));
         }
         self.frame_ids.insert(new_id);
-        
+
         let b: &mut Separator = self
             .widgets
             .get_mut(&new_id)
@@ -377,22 +425,43 @@ impl WidgetHolder {
             .as_any_mut()
             .downcast_mut()
             .unwrap();
-        
+
         b
     }
-    
-    pub fn progress_bar(&mut self, id: WidgetId, label: String, progress_info: ProgressInfo) -> &mut ProgressBar {
-        let new_id = create_widget_id(&format!("ProgressBar<{}>", match progress_info {
-            ProgressInfo::Int { min, max, default_value } => "Int",
-            ProgressInfo::Float { min, max, default_value } => "Float",
-        }), &self.frame_ids, id, &label);
-        
+
+    pub fn progress_bar(
+        &mut self,
+        id: WidgetId,
+        label: String,
+        progress_info: ProgressInfo,
+    ) -> &mut ProgressBar {
+        let new_id = create_widget_id(
+            &format!(
+                "ProgressBar<{}>",
+                match progress_info {
+                    ProgressInfo::Int {
+                        min,
+                        max,
+                        default_value,
+                    } => "Int",
+                    ProgressInfo::Float {
+                        min,
+                        max,
+                        default_value,
+                    } => "Float",
+                }
+            ),
+            &self.frame_ids,
+            id,
+            &label,
+        );
+
         if !self.widgets.contains_key(&new_id) {
             let w = ProgressBar::new(label.clone(), progress_info);
             self.widgets.insert(new_id, Box::new(w));
         }
         self.frame_ids.insert(new_id);
-        
+
         // UPDATE STATE
         let b: &mut ProgressBar = self
             .widgets
@@ -407,13 +476,13 @@ impl WidgetHolder {
 
     pub fn tabs(&mut self, id: WidgetId, tabs: Vec<String>, default_tab: usize) -> &mut TabHolder {
         let new_id = create_widget_id("TabHolder", &self.frame_ids, id, &tabs.join("|"));
-        
+
         if !self.widgets.contains_key(&new_id) {
             let w = TabHolder::new(tabs, default_tab);
             self.widgets.insert(new_id, Box::new(w));
         }
         self.frame_ids.insert(new_id);
-        
+
         // UPDATE STATE
         let b: &mut TabHolder = self
             .widgets
@@ -435,22 +504,20 @@ fn create_widget_id(
     // Generate a hash based on a widget type + label + explicit/auto ID
     let mut hasher = DefaultHasher::new();
     widget_type.hash(&mut hasher);
-    
+
     match id {
         WidgetId::Auto => label.hash(&mut hasher),
         WidgetId::Explicit(s) => {
             s.hash(&mut hasher);
             label.hash(&mut hasher);
-        },
+        }
     };
-    
+
     let hash = hasher.finish();
-    
+
     if frame_ids.contains(&hash) {
-        panic!(
-            "Widget with this type/label already exists. Please give a unique explicit ID."
-        );
+        panic!("Widget with this type/label already exists. Please give a unique explicit ID.");
     }
-    
+
     hash
 }

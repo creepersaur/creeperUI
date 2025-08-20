@@ -1,19 +1,19 @@
-﻿#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum ActionType {
-	Once,
-	EachFrame
+    Once,
+    EachFrame,
 }
 
 impl Default for ActionType {
-	fn default() -> Self {
-		ActionType::EachFrame
-	}
+    fn default() -> Self {
+        ActionType::EachFrame
+    }
 }
 
 impl From<()> for ActionType {
-	fn from(value: ()) -> Self {
-		ActionType::EachFrame
-	}
+    fn from(value: ()) -> Self {
+        ActionType::EachFrame
+    }
 }
 
 // impl Into<ActionType> for ActionType {
