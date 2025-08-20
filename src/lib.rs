@@ -1,4 +1,6 @@
-﻿pub mod ui;
+﻿#![allow(unused)]
+
+pub mod ui;
 pub mod widgets;
 
 pub use ui::ui::UI;
