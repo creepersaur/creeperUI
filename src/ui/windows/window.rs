@@ -414,11 +414,13 @@ impl Window {
         self.widget_holder.retain();
     }
     
-    pub fn scope<F, R>(&mut self, f: F) -> &mut Window
-    where
-        F: Fn(&mut Window) -> R
-    {
+    pub fn scope(&mut self, mut f: impl FnMut(&mut Window)) -> &mut Window {
         f(self);
+        self
+    }
+    
+    pub async fn scope_async(&mut self, mut f: impl AsyncFnMut(&mut Window)) -> &mut Window {
+        f(self).await;
         self
     }
     

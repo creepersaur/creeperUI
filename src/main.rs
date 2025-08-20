@@ -5,7 +5,7 @@ mod widgets;
 use crate::ui::windows::action_type::ActionType;
 use crate::widgets::{ProgressInfo, SliderInfo};
 use macroquad::prelude::*;
-use ui::windows::window_handler::WindowHandler;
+use ui::windows::{window::Window, window_handler::WindowHandler};
 
 #[macroquad::main("Hello")]
 async fn main() {
@@ -14,9 +14,9 @@ async fn main() {
     let mut x = 5;
     
     loop {
-        ui.begin("main").scope(|x| {
-            x.text("Hello World");
-        });
+        ui.begin("main").scope_async(async |win| {
+            test_window(win, &mut checked, &mut x).await
+        }).await;
         
         ui.start_windows();
         ui.end_windows();
@@ -27,8 +27,8 @@ async fn main() {
 }
 
 
-async fn test_window(ui: &mut WindowHandler, checked: &mut bool, x: &mut usize) {
-    let win = ui.begin("").set_size(vec2(400., 400.), ActionType::Once);
+async fn test_window(win: &mut Window, checked: &mut bool, x: &mut usize) {
+    win.set_size(vec2(400., 400.), ActionType::Once);
     win.text("Hello World");
     win.button((), "Hello World");
     
