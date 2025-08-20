@@ -31,6 +31,7 @@ async fn test_window(win: &mut Window, checked: &mut bool, x: &mut usize) {
         (1..=*x).map(|x| format!("Option {x}")).collect(),
         "Option 1",
     );
+    
     *checked = win
         .checkbox((), format!("Checked: {checked}"), *checked)
         .value;
