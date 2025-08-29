@@ -2,6 +2,7 @@ use crate::ui::windows::window::Window;
 use crate::ui::windows::window_handler::WindowHandler;
 
 pub struct UI {
+    pub taken: bool,
     handler: WindowHandler,
 }
 
@@ -9,6 +10,7 @@ impl UI {
     pub async fn new(font_path: Option<&str>) -> Self {
         Self {
             handler: WindowHandler::new(font_path).await,
+            taken: false,
         }
     }
 
@@ -18,6 +20,7 @@ impl UI {
 
     pub fn draw(&mut self) -> bool {
         let taken = self.handler.start_windows();
+        self.taken = taken;
         self.handler.end_windows();
 
         taken

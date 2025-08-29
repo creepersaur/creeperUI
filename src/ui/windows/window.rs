@@ -9,6 +9,7 @@ use crate::widgets::*;
 use macroquad::input::MouseButton::Left;
 use macroquad::prelude::*;
 use std::any::Any;
+use crate::WindowProperties;
 
 pub struct Window {
     pub id: WindowId,
@@ -93,6 +94,23 @@ impl Window {
         self
     }
 
+    pub fn set_properties(&mut self, properties: WindowProperties) -> &mut Window {
+        self.info.draggable = properties.draggable;
+        self.info.resizable = properties.resizable;
+        self.info.closable = properties.closable;
+        if let Some(title) = properties.title {
+            self.title = title;
+        }
+        if let Some(position) = properties.position {
+            self.set_pos(position, ActionType::EachFrame);
+        }
+        if let Some(size) = properties.size {
+            self.set_size(size, ActionType::EachFrame);
+        }
+        
+        self
+    }
+    
     pub fn set_draggable(&mut self, draggable: bool) -> &mut Window {
         self.info.draggable = draggable;
         self
@@ -290,8 +308,13 @@ impl Window {
         if self.info.resizable {
             self.update_resize_handles(window_action, self.taken);
         }
-        if !self.resizing && self.info.closable {
+        if self.resizing {
+            self.taken = true;
+        } else if self.info.closable {
             self.handle_close_button(window_action);
+        }
+        if self.resize_handles.hovering_handle.is_some() {
+            self.taken = true;
         }
 
         if self.info.draggable {
@@ -440,14 +463,28 @@ impl Window {
     pub fn end_widgets(&mut self) {
         self.widget_holder.retain();
     }
-
+    
     pub fn scope(&mut self, mut f: impl FnMut(&mut Window)) -> &mut Window {
         f(self);
         self
     }
-
+    
     pub async fn scope_async(&mut self, mut f: impl AsyncFnMut(&mut Window)) -> &mut Window {
         f(self).await;
+        self
+    }
+    
+    pub fn scope_if(&mut self, condition: impl Into<bool>, mut f: impl FnMut(&mut Window)) -> &mut Window {
+        if condition.into() {
+            f(self);
+        }
+        self
+    }
+    
+    pub async fn scope_async_if(&mut self, condition: impl Into<bool>,  mut f: impl AsyncFnMut(&mut Window)) -> &mut Window {
+        if condition.into() {
+            f(self).await;
+        }
         self
     }
 

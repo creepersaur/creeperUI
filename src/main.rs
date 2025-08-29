@@ -1,5 +1,5 @@
 #![allow(unused)]
-use creeperUI::{ActionType, ProgressInfo, SliderInfo, Window, WindowHandler, UI};
+use creeperUI::{ActionType, ProgressInfo, SliderInfo, Window, WindowHandler, WindowProperties, UI};
 use macroquad::prelude::*;
 
 #[macroquad::main("Hello")]
@@ -9,12 +9,44 @@ async fn main() {
     let mut x = 5;
 
     loop {
-        let win = ui.begin("id");
-        test_window(win, &mut checked, &mut x).await;
+        ui.begin("id")
+            .set_properties(WindowProperties {
+                position: Some(vec2(0.0, 0.0)),
+                size: Some(vec2(300.0, screen_height())),
+                draggable: false,
+                resizable: false,
+                closable: false,
+                ..Default::default()
+            })
+            .scope_async(async |win| {
+                let tab = win.tabs((), vec!["Option1", "Option2", "Option3"], 0).value;
+                
+                // Option1
+                win.scope_if(tab == 0, |win| {
+                    if win.button((), "Press me").pressed {
+                        win.text("JUMP SCARE");
+                    }
+                });
+                
+                // Option2
+                win.scope_if(tab == 1, |win| {
+                    win.text("This is option 2");
+                    win.button((), "Hello World");
+                });
+                
+                // Option3
+                win.scope_async_if(tab == 2, async |win| {
+                    win.image((), "src/job_app.png", Some(vec2(290.0, 400.0))).await;
+                }).await;
+            }).await;
 
+        if !ui.taken && is_mouse_button_pressed(MouseButton::Left) {
+            println!("Yes: {}", get_frame_time() * 1000.0);
+        }
+        
         ui.draw();
 
-        println!("Frame Time: {:2}ms", get_frame_time() * 1000.0);
+        // println!("Frame Time: {:2}ms", get_frame_time() * 1000.0);
         next_frame().await
     }
 }
