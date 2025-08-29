@@ -189,9 +189,12 @@ impl Window {
         self.draw_resize_handles();
 
         // DRAW TOP-LAYER OF WIDGETS
-        let target_3 =
-            self.widget_holder
-                .render(&self.rect, self.info.show_titlebar, self.scroll_y, &self.theme.font);
+        let target_3 = self.widget_holder.render(
+            &self.rect,
+            self.info.show_titlebar,
+            self.scroll_y,
+            &self.theme.font,
+        );
 
         draw_texture_ex(
             &target_3.texture,
@@ -292,7 +295,7 @@ impl Window {
 
         self.taken = false;
         if window_action {
-            let widget_action = self.widget_holder.update(
+            let (widget_action, holder_rect) = self.widget_holder.update(
                 &self.rect,
                 self.info.show_titlebar,
                 hover,
@@ -309,6 +312,10 @@ impl Window {
                 } else if wheel.0 != 0.0 {
                     self.scroll_y += wheel.0;
                 }
+                self.scroll_y = self.scroll_y.clamp(
+                    0.0,
+                    (holder_rect.h - self.rect.h + self.theme.title_thickness).max(0.0),
+                );
             }
         }
 

@@ -221,7 +221,7 @@ impl WidgetHolder {
         mouse: Vec2,
         scroll_y: f32,
         font: &Option<Font>,
-    ) -> WidgetAction {
+    ) -> (WidgetAction, Rect) {
         let title_thickness = match show_titlebar {
             false => 0.0,
             _ => 30.0,
@@ -247,7 +247,7 @@ impl WidgetHolder {
             }
         }
 
-        mouse_action
+        (mouse_action, holder_rect)
     }
 }
 
