@@ -7,6 +7,7 @@ mod separator;
 mod slider;
 mod tab_holder;
 pub mod text;
+pub mod text_ex;
 
 pub use button::Button;
 pub use checkbox::Checkbox;

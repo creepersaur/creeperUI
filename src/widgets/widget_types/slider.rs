@@ -58,7 +58,7 @@ impl Widget for Slider {
                 Some(f) => Some(&f),
                 _ => None,
             },
-            13,
+            14,
             1.0,
         );
 
@@ -72,7 +72,7 @@ impl Widget for Slider {
                         Some(f) => Some(&f),
                         _ => None,
                     },
-                    font_size: 13,
+                    font_size: 14,
                     color: WHITE,
                     ..Default::default()
                 },
@@ -124,7 +124,7 @@ impl Widget for Slider {
                         Some(f) => Some(&f),
                         _ => None,
                     },
-                    font_size: 13,
+                    font_size: 14,
                     color: WHITE,
                     ..Default::default()
                 },
@@ -141,7 +141,7 @@ impl Widget for Slider {
                 Some(f) => Some(&f),
                 _ => None,
             },
-            13,
+            14,
             1.0,
         );
 

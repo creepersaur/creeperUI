@@ -1,6 +1,6 @@
 [package]
 name = "creeperUI"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 description = "An imgui inspired Immediate mode GUI library for Macroquad."
 license = "MIT"

@@ -38,7 +38,7 @@ impl Widget for Checkbox {
                 Some(f) => Some(&f),
                 _ => None,
             },
-            13,
+            14,
             1.0,
         );
 
@@ -52,7 +52,7 @@ impl Widget for Checkbox {
                         Some(f) => Some(&f),
                         _ => None,
                     },
-                    font_size: 13,
+                    font_size: 14,
                     color: match self.hovered {
                         true => WHITE,
                         _ => Color::new(0.9, 0.9, 0.9, 0.9),
@@ -126,7 +126,7 @@ impl Widget for Checkbox {
                 Some(f) => Some(&f),
                 _ => None,
             },
-            13,
+            14,
             1.0,
         );
 

@@ -49,7 +49,7 @@ impl Widget for Dropdown {
                 Some(f) => Some(&f),
                 _ => None,
             },
-            13,
+            14,
             1.0,
         );
 
@@ -97,7 +97,7 @@ impl Widget for Dropdown {
                 Some(f) => Some(&f),
                 _ => None,
             },
-            13,
+            14,
             1.0,
         );
 
@@ -112,7 +112,7 @@ impl Widget for Dropdown {
                         Some(f) => Some(&f),
                         _ => None,
                     },
-                    font_size: 13,
+                    font_size: 14,
                     ..Default::default()
                 },
             );
@@ -137,7 +137,7 @@ impl Widget for Dropdown {
                         Some(f) => Some(&f),
                         _ => None,
                     },
-                    13,
+                    14,
                     1.0,
                 );
 
@@ -170,7 +170,7 @@ impl Widget for Dropdown {
                                 Some(f) => Some(&f),
                                 _ => None,
                             },
-                            font_size: 13,
+                            font_size: 14,
                             ..Default::default()
                         },
                     );
@@ -229,7 +229,7 @@ impl Widget for Dropdown {
                 Some(f) => Some(&f),
                 _ => None,
             },
-            13,
+            14,
             1.0,
         );
 

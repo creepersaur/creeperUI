@@ -2,6 +2,8 @@
 
 A simple imgui-inspired "Immediate Mode GUI" rust crate for macroquad.
 
+<img src="Readme_Image.png">
+
 To get started, import the creeperUI crate and create a macroquad window:
 ```rust
 use creeperUI::*;
