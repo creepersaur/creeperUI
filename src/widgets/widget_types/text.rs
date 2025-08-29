@@ -36,7 +36,7 @@ impl Widget for Text {
             draw_text_ex(
                 &self.value.to_string(),
                 0.0,
-                text_dim.height + info.rect.h,
+                info.rect.y + text_dim.height + info.rect.h,
                 TextParams {
                     font: match &info.font {
                         Some(f) => Some(&f),

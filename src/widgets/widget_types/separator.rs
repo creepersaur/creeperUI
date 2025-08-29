@@ -45,9 +45,9 @@ impl Widget for Separator {
     fn render(&self, info: &mut RenderInfo) -> Option<Vec2> {
         draw_line(
             5.0,
-            info.rect.h + self.padding + (self.thickness / 4.0).floor(),
+            info.rect.y + info.rect.h + self.padding + (self.thickness / 4.0).floor(),
             info.win_rect.w - 15.0,
-            info.rect.h + self.padding + (self.thickness / 4.0).floor(),
+            info.rect.y + info.rect.h + self.padding + (self.thickness / 4.0).floor(),
             self.thickness,
             self.color,
         );

@@ -43,7 +43,7 @@ impl Widget for TabHolder {
 
     fn render(&self, info: &mut RenderInfo) -> Option<Vec2> {
         // DRAW BASE
-        draw_rectangle(-5.0, info.rect.h, info.win_rect.w - 5.0, 30.0, BLACK);
+        draw_rectangle(-5.0, info.rect.y + info.rect.h, info.win_rect.w - 5.0, 30.0, BLACK);
 
         // DRAW UNDERLINES
         let length = self.tabs.len();
@@ -52,14 +52,14 @@ impl Widget for TabHolder {
             if self.tab_pressed == i as i16 {
                 draw_rectangle(
                     i as f32 * info.win_rect.w / length as f32 - 4.0,
-                    info.rect.h,
+                    info.rect.y + info.rect.h,
                     info.win_rect.w / length as f32,
                     30.0,
                     Color::new(0.2, 0.5, 0.9, 0.2),
                 );
                 draw_rectangle_lines(
                     i as f32 * info.win_rect.w / length as f32 - 4.0,
-                    info.rect.h,
+                    info.rect.y + info.rect.h,
                     info.win_rect.w / length as f32,
                     30.0,
                     2.0,
@@ -69,14 +69,14 @@ impl Widget for TabHolder {
             if self.value == i {
                 draw_rectangle(
                     i as f32 * info.win_rect.w / length as f32 - 4.0,
-                    info.rect.h,
+                    info.rect.y + info.rect.h,
                     info.win_rect.w / length as f32,
                     30.0,
                     Color::new(0.2, 0.4, 0.7, 0.2),
                 );
                 draw_rectangle_lines(
                     i as f32 * info.win_rect.w / length as f32 - 4.0,
-                    info.rect.h,
+                    info.rect.y + info.rect.h,
                     info.win_rect.w / length as f32,
                     30.0,
                     2.0,
@@ -84,7 +84,7 @@ impl Widget for TabHolder {
                 );
                 draw_rectangle(
                     i as f32 * info.win_rect.w / length as f32 - 2.0,
-                    info.rect.h + 25.0,
+                    info.rect.y + info.rect.h + 25.0,
                     info.win_rect.w / length as f32 - 4.0,
                     5.0,
                     Color::new(0.2, 0.5, 0.8, 1.0),
@@ -93,14 +93,14 @@ impl Widget for TabHolder {
             if self.hovered == i as i16 {
                 draw_rectangle(
                     i as f32 * info.win_rect.w / length as f32 - 4.0,
-                    info.rect.h,
+                    info.rect.y + info.rect.h,
                     info.win_rect.w / length as f32,
                     30.0,
                     Color::new(1.0, 1.0, 1.0, 0.1),
                 );
                 draw_rectangle_lines(
                     i as f32 * info.win_rect.w / length as f32 - 4.0,
-                    info.rect.h,
+                    info.rect.y + info.rect.h,
                     info.win_rect.w / length as f32,
                     30.0,
                     2.0,
@@ -125,7 +125,7 @@ impl Widget for TabHolder {
                         + info.win_rect.w / length as f32 / 2.0
                         - text_dim.width / 2.0
                         - 4.0,
-                    info.rect.h + 18.0,
+                    info.rect.y + info.rect.h + 18.0,
                     TextParams {
                         font: match &info.font {
                             Some(f) => Some(&f),

@@ -66,7 +66,7 @@ impl Widget for Slider {
             draw_text_ex(
                 &self.text.to_string(),
                 0.0,
-                text_dim.height + info.rect.h + 5.0,
+                info.rect.y + text_dim.height + info.rect.h + 5.0,
                 TextParams {
                     font: match &info.font {
                         Some(f) => Some(&f),
@@ -83,7 +83,7 @@ impl Widget for Slider {
         let r_width = info.win_rect.w - text_dim.width - 15.0;
         draw_rectangle(
             text_dim.width + 5.0,
-            info.rect.h + 5.0,
+            info.rect.y + info.rect.h + 5.0,
             r_width,
             text_dim.height + 4.0,
             match (self.hovered, self.pressed) {
@@ -103,7 +103,7 @@ impl Widget for Slider {
             text_dim.width
                 + 5.0
                 + (((self.value - min) / (max - min)) as f32) * (r_width - self.value_thickness),
-            info.rect.h + 5.0,
+            info.rect.y + info.rect.h + 5.0,
             self.value_thickness,
             text_dim.height + 4.0,
             Color::new(0.34, 0.54, 0.8, 1.0),
@@ -118,7 +118,7 @@ impl Widget for Slider {
                     _ => String::new(),
                 },
                 text_dim.width + 15.0,
-                text_dim.height + info.rect.h + 5.0,
+                info.rect.y + text_dim.height + info.rect.h + 5.0,
                 TextParams {
                     font: match &info.font {
                         Some(f) => Some(&f),

@@ -55,7 +55,7 @@ impl Widget for Dropdown {
 
         draw_rectangle(
             0.0,
-            info.rect.h,
+            info.rect.y + info.rect.h,
             text_dim.width + 10.0,
             text_dim.height + 10.0,
             match (self.hovered, self.pressed) {
@@ -67,7 +67,7 @@ impl Widget for Dropdown {
 
         draw_rectangle(
             text_dim.width + 10.0,
-            info.rect.h,
+            info.rect.y + info.rect.h,
             text_dim.height + 10.0,
             text_dim.height + 10.0,
             Color::new(0.4, 0.7, 1.0, 1.0),
@@ -75,18 +75,18 @@ impl Widget for Dropdown {
 
         draw_line(
             text_dim.width + 15.0,
-            info.rect.h + 9.0,
+            info.rect.y + info.rect.h + 9.0,
             text_dim.width + 20.0,
-            info.rect.h + 15.0,
+            info.rect.y + info.rect.h + 15.0,
             2.0,
             WHITE,
         );
 
         draw_line(
             text_dim.width + 20.0,
-            info.rect.h + 15.0,
+            info.rect.y + info.rect.h + 15.0,
             text_dim.width + 24.0,
-            info.rect.h + 9.0,
+            info.rect.y + info.rect.h + 9.0,
             2.0,
             WHITE,
         );
@@ -105,7 +105,7 @@ impl Widget for Dropdown {
             draw_text_ex(
                 &self.value,
                 (text_dim.width - value_dim.width + 10.0) / 2.0,
-                info.rect.h + text_dim.height * 2.0 - 5.0,
+                info.rect.y + info.rect.h + text_dim.height * 2.0 - 5.0,
                 TextParams {
                     color: WHITE,
                     font: match &info.font {
@@ -181,7 +181,7 @@ impl Widget for Dropdown {
 
             draw_rectangle(
                 0.0,
-                info.rect.h + text_dim.height + 10.0,
+                info.rect.y + info.rect.h + text_dim.height + 10.0,
                 text_dim.width + 10.0,
                 ((text_dim.height + 10.0) * self.items.len() as f32 + 10.0)
                     .max(0.0)
@@ -191,7 +191,7 @@ impl Widget for Dropdown {
 
             draw_rectangle_lines(
                 0.0,
-                info.rect.h + text_dim.height + 10.0,
+                info.rect.y + info.rect.h + text_dim.height + 10.0,
                 text_dim.width + 10.0,
                 ((text_dim.height + 10.0) * self.items.len() as f32 + 10.0)
                     .max(0.0)
@@ -203,7 +203,7 @@ impl Widget for Dropdown {
             draw_texture_ex(
                 &target.texture,
                 0.0,
-                info.rect.h + text_dim.height + 10.0,
+                info.rect.y + info.rect.h + text_dim.height + 10.0,
                 WHITE,
                 DrawTextureParams {
                     source: Some(Rect::new(
@@ -250,11 +250,19 @@ impl Widget for Dropdown {
         }
 
         if self.open {
-            let wheel = mouse_wheel();
-            if wheel.1 != 0.0 {
-                self.scroll_y += wheel.1;
-            } else if wheel.0 != 0.0 {
-                self.scroll_y -= wheel.0;
+            let drop_rect = Rect::new(
+                rect.x,
+                rect.y + rect.h,
+                text_dim.width + 10.0,
+                (text_dim.height * self.items.len() as f32).min(120.0),
+            );
+            if drop_rect.contains(info.mouse) {
+                let wheel = mouse_wheel();
+                if wheel.1 != 0.0 {
+                    self.scroll_y += wheel.1;
+                } else if wheel.0 != 0.0 {
+                    self.scroll_y -= wheel.0;
+                }
             }
 
             let n = self.items.len() as f32;
@@ -269,10 +277,6 @@ impl Widget for Dropdown {
                     0.0,
                 )
                 .ceil();
-
-            let _ = render_target(rect.w as u32, info.win_rect.h as u32);
-
-            let drop_rect = Rect::new(rect.x, rect.y + rect.h, text_dim.width + 10.0, 120.0);
 
             if drop_rect.contains(info.mouse) {
                 info.mouse_action.taken = true;

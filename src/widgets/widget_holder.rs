@@ -108,7 +108,7 @@ impl WidgetHolder {
             .set_filter(FilterMode::Nearest);
     }
 
-    pub fn render(&self, rect: &Rect, show_titlebar: bool, font: &Option<Font>) -> &RenderTarget {
+    pub fn render(&self, rect: &Rect, show_titlebar: bool, scroll_y: f32, font: &Option<Font>) -> &RenderTarget {
         let scale = 0.01;
 
         let title_thickness = match show_titlebar {
@@ -124,7 +124,7 @@ impl WidgetHolder {
         let target_2 = self.target_2.as_ref().unwrap();
         let target_3 = self.target_3.as_ref().unwrap();
 
-        let mut holder_rect = Rect::new(rect.x + 5.0, rect.y + 5.0 + title_thickness, 0.0, 0.0);
+        let mut holder_rect = Rect::new(rect.x + 5.0, -scroll_y, 0.0, 0.0);
         let cam_1 = &Camera2D {
             zoom: vec2(zoom_x, zoom_y),
             target: vec2(1.0 / zoom_x, 1.0 / zoom_y),
@@ -159,11 +159,11 @@ impl WidgetHolder {
         for i in self.frame_ids.iter() {
             let mut info = RenderInfo {
                 rect: holder_rect,
+                win_rect: *rect,
                 font,
                 cam_1,
                 cam_2,
                 cam_3,
-                win_rect: *rect,
             };
 
             let widget_size = self.widgets.get(i).unwrap().render(&mut info);
@@ -219,23 +219,24 @@ impl WidgetHolder {
         show_titlebar: bool,
         hover: bool,
         mouse: Vec2,
+        scroll_y: f32,
         font: &Option<Font>,
     ) -> WidgetAction {
         let title_thickness = match show_titlebar {
             false => 0.0,
             _ => 30.0,
         };
-        let mut holder_rect = Rect::new(rect.x + 5.0, rect.y + 5.0 + title_thickness, 0.0, 0.0);
+        let mut holder_rect = Rect::new(rect.x + 5.0, rect.y + 5.0 + title_thickness - scroll_y, 0.0, 0.0);
         let mut mouse_action = WidgetAction::new();
 
         for i in self.frame_ids.iter() {
             let mut info = UpdateInfo {
                 rect: holder_rect, // by value
                 mouse_action: &mut mouse_action,
+                win_rect: *rect, // also by value
                 hover,
                 mouse,
                 font,
-                win_rect: *rect, // also by value
             };
 
             if let Some(size) = self.widgets.get_mut(i).unwrap().update(&mut info) {

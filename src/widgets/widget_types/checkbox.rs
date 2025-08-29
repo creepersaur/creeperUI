@@ -46,7 +46,7 @@ impl Widget for Checkbox {
             draw_text_ex(
                 &self.text.to_string(),
                 text_dim.height + 10.0,
-                text_dim.height + info.rect.h + 2.0,
+                info.rect.y + text_dim.height + info.rect.h + 2.0,
                 TextParams {
                     font: match &info.font {
                         Some(f) => Some(&f),
@@ -64,7 +64,7 @@ impl Widget for Checkbox {
 
         draw_rectangle(
             0.0,
-            info.rect.h,
+            info.rect.y + info.rect.h,
             text_dim.height + 5.0,
             text_dim.height + 5.0,
             match (self.hovered, self.pressed) {
@@ -77,7 +77,7 @@ impl Widget for Checkbox {
         if self.pressed {
             draw_rectangle_lines(
                 0.0,
-                info.rect.h,
+                info.rect.y + info.rect.h,
                 text_dim.height + 5.0,
                 text_dim.height + 5.0,
                 2.0,
@@ -88,7 +88,7 @@ impl Widget for Checkbox {
         if self.value {
             draw_rectangle(
                 1.0,
-                info.rect.h + 1.0,
+                info.rect.y + info.rect.h + 1.0,
                 text_dim.height + 3.0,
                 text_dim.height + 3.0,
                 Color::new(0.3, 0.7, 1.0, 1.0),
@@ -96,18 +96,18 @@ impl Widget for Checkbox {
 
             draw_line(
                 4.0,
-                info.rect.h + 8.0,
+                info.rect.y + info.rect.h + 8.0,
                 6.0,
-                text_dim.height + info.rect.h + 3.0,
+                info.rect.y + text_dim.height + info.rect.h + 3.0,
                 3.0,
                 WHITE,
             );
 
             draw_line(
                 6.0,
-                text_dim.height + info.rect.h + 3.0,
+                info.rect.y + text_dim.height + info.rect.h + 3.0,
                 text_dim.height + 2.0,
-                info.rect.h + 2.0,
+                info.rect.y + info.rect.h + 2.0,
                 3.0,
                 WHITE,
             )

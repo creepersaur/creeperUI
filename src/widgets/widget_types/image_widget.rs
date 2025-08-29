@@ -29,7 +29,7 @@ impl Widget for ImageWidget {
         draw_texture_ex(
             &self.texture,
             0.0,
-            info.rect.h,
+            info.rect.y + info.rect.h,
             WHITE,
             DrawTextureParams {
                 dest_size: self.size,

@@ -42,7 +42,7 @@ impl Widget for Button {
 
         draw_rectangle(
             0.0,
-            info.rect.h,
+            info.rect.y + info.rect.h,
             text_dim.width + 10.0,
             text_dim.height + 10.0,
             match (self.hovered, self.pressed) {
@@ -55,7 +55,7 @@ impl Widget for Button {
         if self.pressed {
             draw_rectangle_lines(
                 0.0,
-                info.rect.h,
+                info.rect.y + info.rect.h,
                 text_dim.width + 10.0,
                 text_dim.height + 10.0,
                 2.0,
@@ -67,7 +67,7 @@ impl Widget for Button {
             draw_text_ex(
                 &self.value.to_string(),
                 5.0,
-                text_dim.height + info.rect.h + 5.0,
+                info.rect.y + text_dim.height + info.rect.h + 5.0,
                 TextParams {
                     font: match &info.font {
                         Some(f) => Some(&f),

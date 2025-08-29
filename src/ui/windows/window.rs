@@ -17,6 +17,7 @@ pub struct Window {
     pub taken: bool,
     theme: WindowTheme,
     resize_handles: WindowResizeHandles,
+    pub scroll_y: f32,
 
     mouse: Vec2,
     pub open: bool,
@@ -38,6 +39,7 @@ impl Window {
             info: WindowInfo::new(),
             resize_handles: WindowResizeHandles::new(),
             widget_holder: WidgetHolder::new(),
+            scroll_y: 0.0,
 
             open: true,
             mouse: mouse_position().into(),
@@ -189,7 +191,7 @@ impl Window {
         // DRAW TOP-LAYER OF WIDGETS
         let target_3 =
             self.widget_holder
-                .render(&self.rect, self.info.show_titlebar, &self.theme.font);
+                .render(&self.rect, self.info.show_titlebar, self.scroll_y, &self.theme.font);
 
         draw_texture_ex(
             &target_3.texture,
@@ -295,10 +297,18 @@ impl Window {
                 self.info.show_titlebar,
                 hover,
                 self.mouse,
+                self.scroll_y,
                 &self.theme.font,
             );
             if widget_action.taken {
                 self.taken = true;
+            } else {
+                let wheel = mouse_wheel();
+                if wheel.1 != 0.0 {
+                    self.scroll_y -= wheel.1;
+                } else if wheel.0 != 0.0 {
+                    self.scroll_y += wheel.0;
+                }
             }
         }
 
