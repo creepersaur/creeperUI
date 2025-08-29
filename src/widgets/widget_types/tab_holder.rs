@@ -43,7 +43,13 @@ impl Widget for TabHolder {
 
     fn render(&self, info: &mut RenderInfo) -> Option<Vec2> {
         // DRAW BASE
-        draw_rectangle(-5.0, info.rect.y + info.rect.h, info.win_rect.w - 5.0, 30.0, BLACK);
+        draw_rectangle(
+            -5.0,
+            info.rect.y + info.rect.h,
+            info.win_rect.w - 5.0,
+            30.0,
+            BLACK,
+        );
 
         // DRAW UNDERLINES
         let length = self.tabs.len();

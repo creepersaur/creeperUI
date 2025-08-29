@@ -108,7 +108,13 @@ impl WidgetHolder {
             .set_filter(FilterMode::Nearest);
     }
 
-    pub fn render(&self, rect: &Rect, show_titlebar: bool, scroll_y: f32, font: &Option<Font>) -> &RenderTarget {
+    pub fn render(
+        &self,
+        rect: &Rect,
+        show_titlebar: bool,
+        scroll_y: f32,
+        font: &Option<Font>,
+    ) -> &RenderTarget {
         let scale = 0.01;
 
         let title_thickness = match show_titlebar {
@@ -226,7 +232,12 @@ impl WidgetHolder {
             false => 0.0,
             _ => 30.0,
         };
-        let mut holder_rect = Rect::new(rect.x + 5.0, rect.y + 5.0 + title_thickness - scroll_y, 0.0, 0.0);
+        let mut holder_rect = Rect::new(
+            rect.x + 5.0,
+            rect.y + 5.0 + title_thickness - scroll_y,
+            0.0,
+            0.0,
+        );
         let mut mouse_action = WidgetAction::new();
 
         for i in self.frame_ids.iter() {
