@@ -4,6 +4,7 @@ version = "0.1.3"
 edition = "2021"
 description = "An imgui inspired Immediate mode GUI library for Macroquad."
 license = "MIT"
+repository = "https://github.com/creepersaur/creeperUI"
 
 [dependencies]
 macroquad = "0.4.14"
