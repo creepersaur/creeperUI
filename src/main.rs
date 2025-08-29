@@ -6,7 +6,7 @@ async fn main() {
     let mut ui = UI::new(Some("src/Inter.ttf")).await;
     let mut checked = false;
     let mut x = 5;
-
+    
     let font = load_ttf_font("src/bauhs.ttf").await.unwrap();
 
     loop {
