@@ -1,7 +1,5 @@
 #![allow(unused)]
-use creeperUI::{
-    ActionType, ProgressInfo, SliderInfo, Window, WindowHandler, WindowProperties, UI,
-};
+use creeperUI::{gen_id, ActionType, ProgressInfo, SliderInfo, Window, WindowHandler, WindowProperties, UI};
 use macroquad::prelude::*;
 
 #[macroquad::main("Hello")]
