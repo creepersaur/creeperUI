@@ -1,4 +1,3 @@
-use crate::ui::mouse_action::WidgetAction;
 use crate::widgets::widget::Widget;
 use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
 use macroquad::prelude::*;
@@ -33,7 +32,7 @@ impl Widget for Text {
             1.0,
         );
 
-        for i in 0..4 {
+        for _ in 0..4 {
             draw_text_ex(
                 &self.value.to_string(),
                 0.0,

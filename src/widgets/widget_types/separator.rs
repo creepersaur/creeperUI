@@ -1,5 +1,5 @@
 use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
-use crate::widgets::{Text, Widget};
+use crate::widgets::Widget;
 use macroquad::prelude::*;
 use std::any::Any;
 

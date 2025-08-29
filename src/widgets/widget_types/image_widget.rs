@@ -1,4 +1,3 @@
-use crate::ui::mouse_action::WidgetAction;
 use crate::widgets::widget::Widget;
 use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
 use macroquad::prelude::*;
@@ -41,7 +40,7 @@ impl Widget for ImageWidget {
         Some(self.size.unwrap_or(self.texture.size()))
     }
 
-    fn update(&mut self, info: &mut UpdateInfo) -> Option<Vec2> {
+    fn update(&mut self, _: &mut UpdateInfo) -> Option<Vec2> {
         Some(self.size.unwrap_or(self.texture.size()))
     }
 }

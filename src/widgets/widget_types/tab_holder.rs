@@ -1,4 +1,3 @@
-use crate::ui::mouse_action::WidgetAction;
 use crate::widgets::widget::Widget;
 use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
 use macroquad::input::MouseButton::Left;
@@ -43,16 +42,6 @@ impl Widget for TabHolder {
     }
 
     fn render(&self, info: &mut RenderInfo) -> Option<Vec2> {
-        let text_dim = measure_text(
-            &self.value.to_string(),
-            match &info.font {
-                Some(f) => Some(&f),
-                _ => None,
-            },
-            13,
-            1.0,
-        );
-
         // DRAW BASE
         draw_rectangle(-5.0, info.rect.h, info.win_rect.w - 5.0, 30.0, BLACK);
 

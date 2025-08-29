@@ -1,4 +1,3 @@
-use crate::ui::mouse_action::WidgetAction;
 use crate::widgets::widget::Widget;
 use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
 use macroquad::input::MouseButton::Left;
@@ -102,7 +101,7 @@ impl Widget for Dropdown {
             1.0,
         );
 
-        for i in 0..4 {
+        for _ in 0..4 {
             draw_text_ex(
                 &self.value,
                 (text_dim.width - value_dim.width + 10.0) / 2.0,
@@ -271,7 +270,7 @@ impl Widget for Dropdown {
                 )
                 .ceil();
 
-            let target = render_target(rect.w as u32, info.win_rect.h as u32);
+            let _ = render_target(rect.w as u32, info.win_rect.h as u32);
 
             let drop_rect = Rect::new(rect.x, rect.y + rect.h, text_dim.width + 10.0, 120.0);
 

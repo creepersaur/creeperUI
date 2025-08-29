@@ -26,7 +26,7 @@ impl WindowTheme {
                     true => Some(load_ttf_font(font_path).await.unwrap()),
                     _ => None,
                 },
-                _ => None
+                _ => None,
             },
             title_thickness: 30.0,
 

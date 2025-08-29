@@ -1,8 +1,6 @@
-use crate::ui::mouse_action::WidgetAction;
 use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
 use macroquad::prelude::*;
 use std::any::Any;
-use std::fmt::Display;
 
 pub trait Widget {
     fn as_any(&self) -> &dyn Any;

@@ -11,7 +11,7 @@ impl Default for ActionType {
 }
 
 impl From<()> for ActionType {
-    fn from(value: ()) -> Self {
+    fn from(_: ()) -> Self {
         ActionType::EachFrame
     }
 }

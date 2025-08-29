@@ -1,7 +1,5 @@
-use crate::ui::mouse_action::WidgetAction;
 use crate::widgets::widget::Widget;
 use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
-use macroquad::input::MouseButton::Left;
 use macroquad::prelude::*;
 use std::any::Any;
 
@@ -11,7 +9,6 @@ pub struct ProgressBar {
     pub info: ProgressInfo,
     pub hovered: bool,
     pub pressed: bool,
-    value_thickness: f32,
 }
 
 #[derive(Clone)]
@@ -34,18 +31,9 @@ impl ProgressBar {
             text,
             info: info.clone(),
             value: match info {
-                ProgressInfo::Int {
-                    min,
-                    max,
-                    default_value,
-                } => default_value as f64,
-                ProgressInfo::Float {
-                    min,
-                    max,
-                    default_value,
-                } => default_value,
+                ProgressInfo::Int { default_value, .. } => default_value as f64,
+                ProgressInfo::Float { default_value, .. } => default_value,
             },
-            value_thickness: 15.0,
             hovered: false,
             pressed: false,
         }
@@ -71,7 +59,7 @@ impl Widget for ProgressBar {
             1.0,
         );
 
-        for i in 0..4 {
+        for _ in 0..4 {
             draw_text_ex(
                 &self.text.to_string(),
                 0.0,
@@ -99,17 +87,9 @@ impl Widget for ProgressBar {
         );
 
         // VALUE
-        let (slider_type, min, max) = match self.info {
-            ProgressInfo::Float {
-                min,
-                max,
-                default_value,
-            } => ("float", min, max),
-            ProgressInfo::Int {
-                min,
-                max,
-                default_value,
-            } => ("int", min as f64, max as f64),
+        let (slider_type, max, ..) = match self.info {
+            ProgressInfo::Float { min, max, .. } => ("float", min, max),
+            ProgressInfo::Int { min, max, .. } => ("int", min as f64, max as f64),
         };
 
         draw_rectangle(
@@ -122,7 +102,7 @@ impl Widget for ProgressBar {
 
         //PRINT VALUE
 
-        for i in 0..14 {
+        for _ in 0..14 {
             draw_text_ex(
                 &match slider_type {
                     "float" => format!("{:.2}", self.value),
@@ -158,16 +138,8 @@ impl Widget for ProgressBar {
         );
 
         let (slider_type, min, max) = match self.info {
-            ProgressInfo::Float {
-                min,
-                max,
-                default_value,
-            } => ("float", min, max),
-            ProgressInfo::Int {
-                min,
-                max,
-                default_value,
-            } => ("int", min as f64, max as f64),
+            ProgressInfo::Float { min, max, .. } => ("float", min, max),
+            ProgressInfo::Int { min, max, .. } => ("int", min as f64, max as f64),
         };
 
         self.value = self.value.clamp(min, max);

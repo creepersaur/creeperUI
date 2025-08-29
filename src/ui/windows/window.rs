@@ -1,15 +1,11 @@
 use crate::ui::mouse_action::{MouseAction, WidgetAction};
-use crate::ui::windows::action_type::ActionType;
 use crate::ui::windows::win_resize_handles::WindowResizeHandles;
-use crate::ui::windows::window_handler::WindowId;
 use crate::ui::windows::window_info::WindowInfo;
-use crate::ui::windows::window_theme::WindowTheme;
-use crate::widgets::widget_holder::WidgetHolder;
+use crate::widget_holder::WidgetHolder;
 use crate::widgets::*;
+use crate::{ActionType, WindowId, WindowProperties, WindowTheme};
 use macroquad::input::MouseButton::Left;
 use macroquad::prelude::*;
-use std::any::Any;
-use crate::WindowProperties;
 
 pub struct Window {
     pub id: WindowId,
@@ -107,10 +103,10 @@ impl Window {
         if let Some(size) = properties.size {
             self.set_size(size, ActionType::EachFrame);
         }
-        
+
         self
     }
-    
+
     pub fn set_draggable(&mut self, draggable: bool) -> &mut Window {
         self.info.draggable = draggable;
         self
@@ -463,29 +459,32 @@ impl Window {
     pub fn end_widgets(&mut self) {
         self.widget_holder.retain();
     }
-    
+
     pub fn scope(&mut self, mut f: impl FnMut(&mut Window)) -> &mut Window {
         f(self);
         self
     }
-    
-    pub async fn scope_async(&mut self, mut f: impl AsyncFnMut(&mut Window)) -> &mut Window {
-        f(self).await;
-        self
+
+    #[must_use = "Async scopes won't run unless you `.await` them."]
+    pub async fn scope_async(&mut self, mut f: impl AsyncFnMut(&mut Window)) {
+        f(self).await
     }
-    
-    pub fn scope_if(&mut self, condition: impl Into<bool>, mut f: impl FnMut(&mut Window)) -> &mut Window {
+
+    pub fn scope_if(&mut self, condition: impl Into<bool>, mut f: impl FnMut(&mut Window)) {
         if condition.into() {
-            f(self);
+            f(self)
         }
-        self
     }
-    
-    pub async fn scope_async_if(&mut self, condition: impl Into<bool>,  mut f: impl AsyncFnMut(&mut Window)) -> &mut Window {
+
+    #[must_use = "Async scopes won't run unless you `.await` them."]
+    pub async fn scope_async_if(
+        &mut self,
+        condition: impl Into<bool>,
+        mut f: impl AsyncFnMut(&mut Window),
+    ) {
         if condition.into() {
             f(self).await;
         }
-        self
     }
 
     // WIDGET TYPES
@@ -508,6 +507,7 @@ impl Window {
             .checkbox(id.into(), label.to_string(), default_value)
     }
 
+    #[must_use = "Images won't load unless you `.await` them."]
     pub async fn image(
         &mut self,
         id: impl Into<WidgetId>,

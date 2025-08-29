@@ -1,13 +1,9 @@
-use crate::ui::mouse_action::{MouseAction, WidgetAction};
-use crate::ui::windows::action_type::ActionType;
+use crate::ui::mouse_action::WidgetAction;
 use crate::widgets::*;
 use indexmap::IndexSet;
 use macroquad::prelude::*;
-use owo_colors::OwoColorize;
-use std::collections::{HashMap, HashSet};
-use std::fmt::format;
+use std::collections::HashMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
-use std::ops::Index;
 
 pub struct UpdateInfo<'a> {
     pub rect: Rect,
@@ -346,16 +342,8 @@ impl WidgetHolder {
             &format!(
                 "Slider<{}>",
                 match slider_info {
-                    SliderInfo::Int {
-                        min,
-                        max,
-                        default_value,
-                    } => "Int",
-                    SliderInfo::Float {
-                        min,
-                        max,
-                        default_value,
-                    } => "Float",
+                    SliderInfo::Int { .. } => "Int",
+                    SliderInfo::Float { .. } => "Float",
                 }
             ),
             &self.frame_ids,
@@ -439,16 +427,8 @@ impl WidgetHolder {
             &format!(
                 "ProgressBar<{}>",
                 match progress_info {
-                    ProgressInfo::Int {
-                        min,
-                        max,
-                        default_value,
-                    } => "Int",
-                    ProgressInfo::Float {
-                        min,
-                        max,
-                        default_value,
-                    } => "Float",
+                    ProgressInfo::Int { .. } => "Int",
+                    ProgressInfo::Float { .. } => "Float",
                 }
             ),
             &self.frame_ids,

@@ -1,4 +1,3 @@
-use crate::ui::mouse_action::WidgetAction;
 use crate::widgets::widget::Widget;
 use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
 use macroquad::input::MouseButton::Left;
@@ -34,16 +33,8 @@ impl Slider {
             text,
             info: info.clone(),
             value: match info {
-                SliderInfo::Int {
-                    min,
-                    max,
-                    default_value,
-                } => default_value as f64,
-                SliderInfo::Float {
-                    min,
-                    max,
-                    default_value,
-                } => default_value,
+                SliderInfo::Int { default_value, .. } => default_value as f64,
+                SliderInfo::Float { default_value, .. } => default_value,
             },
             value_thickness: 15.0,
             hovered: false,
@@ -71,7 +62,7 @@ impl Widget for Slider {
             1.0,
         );
 
-        for i in 0..4 {
+        for _ in 0..4 {
             draw_text_ex(
                 &self.text.to_string(),
                 0.0,
@@ -104,16 +95,8 @@ impl Widget for Slider {
 
         // VALUE
         let (slider_type, min, max) = match self.info {
-            SliderInfo::Float {
-                min,
-                max,
-                default_value,
-            } => ("float", min, max),
-            SliderInfo::Int {
-                min,
-                max,
-                default_value,
-            } => ("int", min as f64, max as f64),
+            SliderInfo::Float { min, max, .. } => ("float", min, max),
+            SliderInfo::Int { min, max, .. } => ("int", min as f64, max as f64),
         };
 
         draw_rectangle(
@@ -127,7 +110,7 @@ impl Widget for Slider {
         );
 
         //PRINT VALUE
-        for i in 0..4 {
+        for _ in 0..4 {
             draw_text_ex(
                 &match slider_type {
                     "float" => format!("{:.2}", self.value),
@@ -185,23 +168,15 @@ impl Widget for Slider {
         }
 
         let (slider_type, min, max) = match self.info {
-            SliderInfo::Float {
-                min,
-                max,
-                default_value,
-            } => ("float", min, max),
-            SliderInfo::Int {
-                min,
-                max,
-                default_value,
-            } => ("int", min as f64, max as f64),
+            SliderInfo::Float { min, max, .. } => ("float", min, max),
+            SliderInfo::Int { min, max, .. } => ("int", min as f64, max as f64),
         };
 
         if self.pressed {
-            self.value = (((info.mouse.x - self.value_thickness / 2.0 - r_left)
+            self.value = ((info.mouse.x - self.value_thickness / 2.0 - r_left)
                 / (r_width - self.value_thickness)) as f64
                 * (max - min)
-                + min);
+                + min;
         }
 
         self.value = self.value.clamp(min, max);
