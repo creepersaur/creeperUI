@@ -467,14 +467,20 @@ impl Window {
     }
 
     #[must_use = "Async scopes won't run unless you `.await` them."]
-    pub async fn scope_async(&mut self, mut f: impl AsyncFnMut(&mut Window)) {
-        f(self).await
+    pub async fn scope_async(&mut self, mut f: impl AsyncFnMut(&mut Window)) -> &mut Window {
+        f(self).await;
+        self
     }
 
-    pub fn scope_if(&mut self, condition: impl Into<bool>, mut f: impl FnMut(&mut Window)) {
+    pub fn scope_if(
+        &mut self,
+        condition: impl Into<bool>,
+        mut f: impl FnMut(&mut Window),
+    ) -> &mut Window {
         if condition.into() {
             f(self)
         }
+        self
     }
 
     #[must_use = "Async scopes won't run unless you `.await` them."]
@@ -482,10 +488,11 @@ impl Window {
         &mut self,
         condition: impl Into<bool>,
         mut f: impl AsyncFnMut(&mut Window),
-    ) {
+    ) -> &mut Window {
         if condition.into() {
             f(self).await;
         }
+        self
     }
 
     // WIDGET TYPES
