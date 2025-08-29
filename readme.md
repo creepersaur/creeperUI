@@ -95,6 +95,12 @@ win.slider(id, "Label", SliderInfo::Int {
 // Same as a slider, but you can't drag it physically
 // also uses ProgressInfo struct instead of SliderInfo
 win.progress_bar(id, "Label", ProgressInfo);
+
+// Tabs are kinda like dropdowns, but horizontal
+// They take a vector of options and the default value (as a number)
+// use `.value` to get the current selected tab.
+// then use an if-statement or scope_if to spawn the UI based on the current tab
+win.tabs((), vec!["Option1", "Option2", "Option3"], 0);
 ```
 
 # Window Properties
