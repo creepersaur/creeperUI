@@ -29,7 +29,7 @@ use macroquad::prelude::*;
 async fn main() {
     // I'm using the Arial font. (Put it inside `src/`)
     // If you really don't want to use a font, use `None`
-    let mut ui = UI::new(Some("src/Arial.ttf"));
+    let mut ui = UI::new(Some("src/Arial.ttf")).await;
     
     loop {
         next_frame().await
@@ -64,7 +64,7 @@ use macroquad::prelude::*;
 
 #[macroquad::main("Hello World")]
 async fn main() {
-    let mut ui = UI::new(Some("src/Arial.ttf"));
+    let mut ui = UI::new(Some("src/Arial.ttf")).await;
     
     loop { 
         ui.begin("id");
