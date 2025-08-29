@@ -256,7 +256,8 @@ impl WidgetHolder {
 
 impl WidgetHolder {
     pub fn text(&mut self, id: WidgetId, label: String) -> &mut Text {
-        let new_id = create_widget_id("Text", &self.frame_ids, id, &label);
+        let unique = &self.frame_ids.len().to_string();
+        let new_id = create_widget_id(&format!("Text:{unique}"), &self.frame_ids, id, &label);
 
         if !self.widgets.contains_key(&new_id) {
             let w = Text::new(label.clone());
@@ -283,7 +284,8 @@ impl WidgetHolder {
         font_size: u16,
         font: Option<Font>,
     ) -> &mut TextEx {
-        let new_id = create_widget_id("TextEx", &self.frame_ids, id, &label);
+        let unique = &self.frame_ids.len().to_string();
+        let new_id = create_widget_id(&format!("TextEx:{unique}"), &self.frame_ids, id, &label);
 
         if !self.widgets.contains_key(&new_id) {
             let w = TextEx::new(label.clone(), color, font_size, font);
@@ -303,7 +305,8 @@ impl WidgetHolder {
     }
 
     pub fn button(&mut self, id: WidgetId, label: String) -> &mut Button {
-        let new_id = create_widget_id("Button", &self.frame_ids, id, &label);
+        let unique = &self.frame_ids.len().to_string();
+        let new_id = create_widget_id(&format!("Button:{unique}"), &self.frame_ids, id, &label);
 
         if !self.widgets.contains_key(&new_id) {
             let w = Button::new(label.clone());
@@ -350,7 +353,8 @@ impl WidgetHolder {
         path: String,
         size: Option<Vec2>,
     ) -> &mut ImageWidget {
-        let new_id = create_widget_id("Image", &self.frame_ids, id, &path);
+        let unique = &self.frame_ids.len().to_string();
+        let new_id = create_widget_id(&format!("Image:{unique}"), &self.frame_ids, id, &path);
 
         if !self.widgets.contains_key(&new_id) {
             let w = ImageWidget::new(path, size).await;
@@ -452,9 +456,10 @@ impl WidgetHolder {
         label: String,
         progress_info: ProgressInfo,
     ) -> &mut ProgressBar {
+        let unique = &self.frame_ids.len().to_string();
         let new_id = create_widget_id(
             &format!(
-                "ProgressBar<{}>",
+                "ProgressBar<{}>:{unique}",
                 match progress_info {
                     ProgressInfo::Int { .. } => "Int",
                     ProgressInfo::Float { .. } => "Float",

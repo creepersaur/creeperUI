@@ -1,4 +1,3 @@
-#![allow(unused)]
 use creeperUI::{
     gen_id, ActionType, ProgressInfo, SliderInfo, Window, WindowHandler, WindowProperties, UI,
 };
@@ -13,42 +12,33 @@ async fn main() {
     let font = load_ttf_font("src/bauhs.ttf").await.unwrap();
 
     loop {
-        let win = ui.begin("id");
-        // .set_properties(WindowProperties {
-        //     position: Some(vec2(0.0, 0.0)),
-        //     size: Some(vec2(300.0, screen_height())),
-        //     draggable: false,
-        //     resizable: false,
-        //     closable: false,
-        //     ..Default::default()
-        // })
-        // .scope_async(async |win| {
-        //     let tab = win.tabs((), vec!["Option1", "Option2", "Option3"], 0).value;
-        //
-        //     // Option1
-        //     win.scope_if(tab == 0, |win| {
-        //         if win.button((), "Press me").pressed {
-        //             win.text("JUMP SCARE");
-        //         }
-        //         win.text(format!("FPS: {}", get_fps()));
-        //     });
-        //
-        //     // Option2
-        //     win.scope_if(tab == 1, |win| {
-        //         win.text_ex("Hello", RED, 30, Some(font.clone()));
-        //
-        //         win.text("This is option 2");
-        //         win.button((), "Hello World");
-        //     });
-        //
-        //     // Option3
-        //     win.scope_async_if(tab == 2, async |win| {
-        //         win.image((), "src/job_app.png", Some(vec2(290.0, 400.0)))
-        //             .await;
-        //     })
-        //     .await;
-        // })
-        // .await;
+        let win = ui
+            .begin("id")
+            .scope_async(async |win| {
+                let tab = win.tabs((), vec!["Option1", "Option2", "Option3"], 0).value;
+
+                // Option1
+                win.scope_if(tab == 0, |win| {
+                    if win.button((), "Press me").pressed {
+                        win.text("JUMP SCARE");
+                    }
+                    win.text(format!("FPS: {}", get_fps()));
+                });
+
+                // Option2
+                win.scope_if(tab == 1, |win| {
+                    win.text_ex("Hello", RED, 30, Some(font.clone()));
+
+                    win.text("This is option 2");
+                    win.button((), "Hello World");
+                });
+
+                // Option3
+                win.scope_async_if(tab == 2, async |win| {
+                    win.image((), "src/job_app.png", Some(vec2(290.0, 400.0))).await;
+                }).await;
+            })
+            .await;
 
         test_window(win, &mut checked, &mut x).await;
 

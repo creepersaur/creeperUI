@@ -27,9 +27,9 @@ use macroquad::prelude::*;
 
 #[macroquad::main("Hello World")]
 async fn main() {
-    // I'm using the JetbrainsMono font.
+    // I'm using the Arial font. (Put it inside `src/`)
     // If you really don't want to use a font, use `None`
-    let mut ui = UI::new(Some("src/jetbrains.ttf"));
+    let mut ui = UI::new(Some("src/Arial.ttf"));
     
     loop {
         next_frame().await
@@ -49,6 +49,35 @@ loop {
 }
 ```
 When you run the program now, you'll have a fully functional UI window.
+
+---
+
+## Handling Mouse Input for Windows
+
+If your app / game requires mouse input, creeperUI doesn't
+have a way to block the mouse but you can use `ui.taken` to decide whether to do something.
+
+`ui.taken` is a boolean that tells the user whether the UI currently has access to the mouse.
+```rust
+use creeperUI::*;
+use macroquad::prelude::*;
+
+#[macroquad::main("Hello World")]
+async fn main() {
+    let mut ui = UI::new(Some("src/Arial.ttf"));
+    
+    loop { 
+        ui.begin("id");
+    
+        if !ui.taken && is_mouse_button_pressed(MouseButton::Left) {
+            println!("This will only run if mouse is not inside the window.")
+        }
+    
+        ui.draw();
+        next_frame().await
+    }
+}
+```
 
 ---
 
