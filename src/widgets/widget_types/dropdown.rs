@@ -254,7 +254,7 @@ impl Widget for Dropdown {
                 rect.x,
                 rect.y + rect.h,
                 text_dim.width + 10.0,
-                (text_dim.height * self.items.len() as f32).min(120.0),
+                ((text_dim.height + 10.0) * self.items.len() as f32 + 10.0).min(120.0),
             );
             if drop_rect.contains(info.mouse) {
                 let wheel = mouse_wheel();
@@ -308,6 +308,7 @@ impl Widget for Dropdown {
         if is_mouse_button_released(Left) {
             if self.pressed && !self.open {
                 self.open = true;
+                self.item_hovered = None;
             } else {
                 self.open = false;
             }

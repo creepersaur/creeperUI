@@ -1,6 +1,4 @@
-use creeperUI::{
-    gen_id, ActionType, ProgressInfo, SliderInfo, Window, WindowHandler, WindowProperties, UI,
-};
+use creeperUI::{ActionType, ProgressInfo, SliderInfo, Window, UI};
 use macroquad::prelude::*;
 
 #[macroquad::main("Hello")]
@@ -35,8 +33,10 @@ async fn main() {
 
                 // Option3
                 win.scope_async_if(tab == 2, async |win| {
-                    win.image((), "src/job_app.png", Some(vec2(290.0, 400.0))).await;
-                }).await;
+                    win.image((), "src/job_app.png", Some(vec2(290.0, 400.0)))
+                        .await;
+                })
+                .await;
             })
             .await;
 

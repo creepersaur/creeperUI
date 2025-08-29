@@ -99,6 +99,11 @@ win.text("Label");        // No ID for this one
 win.button(id, "Label");  // Use the `.clicked` property to check if its clicked
 win.separator();          // No ID for this one, 
 
+// TextEx is a more customizable text widget
+// You can change the color, font_size: u16, and give an optional font
+// Just make sure to clone an existing font (or use None if you don't want it)
+win.text_ex("Label", color, font_size, Option<Font>)
+
 // `checked` boolean tells the dropdown to be checked by default
 // use the `.value` property to check if it's checked
 win.checkbox(id, "Label", checked);

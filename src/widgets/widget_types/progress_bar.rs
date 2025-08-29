@@ -88,8 +88,8 @@ impl Widget for ProgressBar {
 
         // VALUE
         let (slider_type, max) = match self.info {
-            ProgressInfo::Float { min, max, .. } => ("float", max),
-            ProgressInfo::Int { min, max, .. } => ("int", max as f64),
+            ProgressInfo::Float { max, .. } => ("float", max),
+            ProgressInfo::Int { max, .. } => ("int", max as f64),
         };
 
         draw_rectangle(
