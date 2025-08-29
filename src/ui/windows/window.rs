@@ -1,3 +1,4 @@
+use crate::text_ex::TextEx;
 use crate::ui::mouse_action::{MouseAction, WidgetAction};
 use crate::ui::windows::win_resize_handles::WindowResizeHandles;
 use crate::ui::windows::window_info::WindowInfo;
@@ -252,7 +253,7 @@ impl Window {
                     Some(f) => Some(&f),
                     _ => None,
                 },
-                font_size: 13,
+                font_size: 14,
                 ..Default::default()
             },
         );
@@ -364,7 +365,7 @@ impl Window {
                 Some(f) => Some(&f),
                 _ => None,
             },
-            13,
+            14,
             1.0,
         );
         if self.info.show_titlebar {
@@ -491,6 +492,17 @@ impl Window {
 
     pub fn text(&mut self, label: impl ToString) -> &mut Text {
         self.widget_holder.text(().into(), label.to_string())
+    }
+
+    pub fn text_ex(
+        &mut self,
+        label: impl ToString,
+        color: Color,
+        font_size: u16,
+        font: Option<Font>,
+    ) -> &mut TextEx {
+        self.widget_holder
+            .text_ex(().into(), label.to_string(), color, font_size, font)
     }
 
     pub fn button(&mut self, id: impl Into<WidgetId>, label: impl ToString) -> &mut Button {

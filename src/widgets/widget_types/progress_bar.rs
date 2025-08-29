@@ -55,7 +55,7 @@ impl Widget for ProgressBar {
                 Some(f) => Some(&f),
                 _ => None,
             },
-            13,
+            14,
             1.0,
         );
 
@@ -69,7 +69,7 @@ impl Widget for ProgressBar {
                         Some(f) => Some(&f),
                         _ => None,
                     },
-                    font_size: 13,
+                    font_size: 14,
                     color: WHITE,
                     ..Default::default()
                 },
@@ -87,9 +87,9 @@ impl Widget for ProgressBar {
         );
 
         // VALUE
-        let (slider_type, max, ..) = match self.info {
-            ProgressInfo::Float { min, max, .. } => ("float", min, max),
-            ProgressInfo::Int { min, max, .. } => ("int", min as f64, max as f64),
+        let (slider_type, max) = match self.info {
+            ProgressInfo::Float { min, max, .. } => ("float", max),
+            ProgressInfo::Int { min, max, .. } => ("int", max as f64),
         };
 
         draw_rectangle(
@@ -116,7 +116,7 @@ impl Widget for ProgressBar {
                         Some(f) => Some(&f),
                         _ => None,
                     },
-                    font_size: 13,
+                    font_size: 14,
                     color: WHITE,
                     ..Default::default()
                 },
@@ -133,7 +133,7 @@ impl Widget for ProgressBar {
                 Some(f) => Some(&f),
                 _ => None,
             },
-            13,
+            14,
             1.0,
         );
 

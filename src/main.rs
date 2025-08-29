@@ -1,48 +1,56 @@
 #![allow(unused)]
-use creeperUI::{gen_id, ActionType, ProgressInfo, SliderInfo, Window, WindowHandler, WindowProperties, UI};
+use creeperUI::{
+    gen_id, ActionType, ProgressInfo, SliderInfo, Window, WindowHandler, WindowProperties, UI,
+};
 use macroquad::prelude::*;
 
 #[macroquad::main("Hello")]
 async fn main() {
-    let mut ui = UI::new(Some("src/Jetbrains.ttf")).await;
+    let mut ui = UI::new(Some("src/Inter.ttf")).await;
     let mut checked = false;
     let mut x = 5;
 
+    let font = load_ttf_font("src/bauhs.ttf").await.unwrap();
+
     loop {
-        ui.begin("id")
-            .set_properties(WindowProperties {
-                position: Some(vec2(0.0, 0.0)),
-                size: Some(vec2(300.0, screen_height())),
-                draggable: false,
-                resizable: false,
-                closable: false,
-                ..Default::default()
-            })
-            .scope_async(async |win| {
-                let tab = win.tabs((), vec!["Option1", "Option2", "Option3"], 0).value;
+        let win = ui.begin("id");
+        // .set_properties(WindowProperties {
+        //     position: Some(vec2(0.0, 0.0)),
+        //     size: Some(vec2(300.0, screen_height())),
+        //     draggable: false,
+        //     resizable: false,
+        //     closable: false,
+        //     ..Default::default()
+        // })
+        // .scope_async(async |win| {
+        //     let tab = win.tabs((), vec!["Option1", "Option2", "Option3"], 0).value;
+        //
+        //     // Option1
+        //     win.scope_if(tab == 0, |win| {
+        //         if win.button((), "Press me").pressed {
+        //             win.text("JUMP SCARE");
+        //         }
+        //         win.text(format!("FPS: {}", get_fps()));
+        //     });
+        //
+        //     // Option2
+        //     win.scope_if(tab == 1, |win| {
+        //         win.text_ex("Hello", RED, 30, Some(font.clone()));
+        //
+        //         win.text("This is option 2");
+        //         win.button((), "Hello World");
+        //     });
+        //
+        //     // Option3
+        //     win.scope_async_if(tab == 2, async |win| {
+        //         win.image((), "src/job_app.png", Some(vec2(290.0, 400.0)))
+        //             .await;
+        //     })
+        //     .await;
+        // })
+        // .await;
 
-                // Option1
-                win.scope_if(tab == 0, |win| {
-                    if win.button((), "Press me").pressed {
-                        win.text("JUMP SCARE");
-                    }
-                    win.text(format!("FPS: {}", get_fps()));
-                });
-
-                // Option2
-                win.scope_if(tab == 1, |win| {
-                    win.text("This is option 2");
-                    win.button((), "Hello World");
-                });
-
-                // Option3
-                win.scope_async_if(tab == 2, async |win| {
-                    win.image((), "src/job_app.png", Some(vec2(290.0, 400.0)))
-                        .await;
-                })
-                .await;
-            })
-            .await;
+        test_window(win, &mut checked, &mut x).await;
 
         if !ui.taken && is_mouse_button_pressed(MouseButton::Left) {
             println!("Yes: {}", get_frame_time() * 1000.0);
@@ -50,13 +58,25 @@ async fn main() {
 
         ui.draw();
 
-        println!("Frame Time: {:2}ms", get_frame_time() * 1000.0);
+        // println!("Frame Time: {:2}ms", get_frame_time() * 1000.0);
         next_frame().await
     }
 }
 
 async fn test_window(win: &mut Window, checked: &mut bool, x: &mut usize) {
     win.set_size(vec2(400., 400.), ActionType::Once);
+
+    if win.tabs((), vec!["Tab 1", "Tab 2"], 0).value == 1 {
+        win.text("Bros on Tab 2 lmao");
+        return;
+    }
+
+    win.separator().color = WHITE.with_alpha(0.0);
+
+    win.text_ex("Documentation", WHITE, 30, None);
+
+    win.separator().color = WHITE.with_alpha(0.0);
+
     win.text("Hello World");
     win.button((), "Hello World");
 

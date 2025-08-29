@@ -1,6 +1,8 @@
+use crate::text_ex::TextEx;
 use crate::ui::mouse_action::WidgetAction;
 use crate::widgets::*;
 use indexmap::IndexSet;
+use macroquad::math::u16;
 use macroquad::prelude::*;
 use std::collections::HashMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
@@ -264,6 +266,33 @@ impl WidgetHolder {
 
         // UPDATE STATE
         let b: &mut Text = self
+            .widgets
+            .get_mut(&new_id)
+            .unwrap()
+            .as_any_mut()
+            .downcast_mut()
+            .unwrap();
+        b
+    }
+
+    pub fn text_ex(
+        &mut self,
+        id: WidgetId,
+        label: String,
+        color: Color,
+        font_size: u16,
+        font: Option<Font>,
+    ) -> &mut TextEx {
+        let new_id = create_widget_id("TextEx", &self.frame_ids, id, &label);
+
+        if !self.widgets.contains_key(&new_id) {
+            let w = TextEx::new(label.clone(), color, font_size, font);
+            self.widgets.insert(new_id, Box::new(w));
+        }
+        self.frame_ids.insert(new_id);
+
+        // UPDATE STATE
+        let b: &mut TextEx = self
             .widgets
             .get_mut(&new_id)
             .unwrap()
