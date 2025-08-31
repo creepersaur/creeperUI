@@ -39,10 +39,10 @@ async fn main() {
 
 ## Creating a Window
 
-To make a window, call `ui.begin` and pass the `id` of the window inside the loop. Then call `ui.draw()` before next_frame.
+To make a window, call `ui.begin` and pass in a **unique** `id` of the window inside the loop. Then call `ui.draw()` before next_frame.
 ```rust
 loop {
-    ui.begin("id");
+    let win = ui.begin("id");
     
     ui.draw();
     next_frame().await
@@ -66,8 +66,8 @@ use macroquad::prelude::*;
 async fn main() {
     let mut ui = UI::new(Some("src/Arial.ttf")).await;
     
-    loop { 
-        ui.begin("id");
+    loop {
+        let win = ui.begin("id");
     
         if !ui.taken && is_mouse_button_pressed(MouseButton::Left) {
             println!("This will only run if mouse is not inside the window.")

@@ -173,6 +173,7 @@ impl Widget for Slider {
         };
 
         if self.pressed {
+            info.mouse_action.taken = true;
             self.value = ((info.mouse.x - self.value_thickness / 2.0 - r_left)
                 / (r_width - self.value_thickness)) as f64
                 * (max - min)

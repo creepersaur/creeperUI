@@ -8,7 +8,7 @@ async fn main() {
     let mut x = 5;
     
     let font = load_ttf_font("src/bauhs.ttf").await.unwrap();
-
+    
     loop {
         let win = ui
             .begin("id")

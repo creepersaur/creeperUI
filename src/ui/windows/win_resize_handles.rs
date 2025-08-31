@@ -101,7 +101,7 @@ impl WindowResizeHandles {
             self.resizing = None;
         }
 
-        if self.hovering_handle.is_some() {
+        if self.hovering_handle.is_some() && !taken {
             self.opacity = self.opacity.lerp(1.0, 0.1);
         } else {
             self.opacity = self.opacity.lerp(0.0, 0.1);

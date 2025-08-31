@@ -6,6 +6,8 @@ pub struct WindowInfo {
     pub close_button_hovered: bool,
     pub close_button_pressed: bool,
     pub close_color: Color,
+    pub scroll_pressed: Option<f32>,
+    pub scroll_hovered: bool,
     pub ran_once: bool,
     pub min_size: Vec2,
     pub show_titlebar: bool,

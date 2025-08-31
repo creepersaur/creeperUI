@@ -18,6 +18,8 @@ pub struct Window {
     theme: WindowTheme,
     resize_handles: WindowResizeHandles,
     pub scroll_y: f32,
+    pub max_scroll_y: f32,
+    pub scrolling: bool,
 
     mouse: Vec2,
     pub open: bool,
@@ -40,6 +42,8 @@ impl Window {
             resize_handles: WindowResizeHandles::new(),
             widget_holder: WidgetHolder::new(),
             scroll_y: 0.0,
+            max_scroll_y: 0.0,
+            scrolling: false,
 
             open: true,
             mouse: mouse_position().into(),
@@ -167,9 +171,23 @@ impl Window {
             self.theme.background,
         );
 
+        // DRAW TOP-LAYER OF WIDGETS
+        let target_3 = self.widget_holder.render(
+            &self.rect,
+            self.info.show_titlebar,
+            self.scroll_y,
+            &self.theme.font,
+        );
+
+        self.draw_scrollbar();
+
         // TITLEBAR
         if self.info.show_titlebar {
             self.draw_titlebar();
+        }
+
+        if !self.info.scroll_hovered && !self.info.scroll_pressed.is_some() {
+            self.draw_resize_handles();
         }
 
         // OUTLINE
@@ -184,16 +202,6 @@ impl Window {
                 (true, _) => self.theme.active_stroke,
                 _ => self.theme.win_stroke,
             },
-        );
-
-        self.draw_resize_handles();
-
-        // DRAW TOP-LAYER OF WIDGETS
-        let target_3 = self.widget_holder.render(
-            &self.rect,
-            self.info.show_titlebar,
-            self.scroll_y,
-            &self.theme.font,
         );
 
         draw_texture_ex(
@@ -267,6 +275,42 @@ impl Window {
     pub fn draw_resize_handles(&self) {
         self.resize_handles.render(&self.rect, &self.theme);
     }
+
+    pub fn draw_scrollbar(&self) {
+        if self.max_scroll_y < 5.0 {
+            return;
+        }
+        
+        let viewport_h = self.rect.h - self.theme.title_thickness;
+        let content_h = viewport_h + self.max_scroll_y;
+        let thickness = self.theme.scrollbar_thickness;
+
+        let thumb_h = if content_h <= 0.0 {
+            viewport_h
+        } else {
+            (viewport_h / content_h) * viewport_h
+        };
+
+        let thumb_y = if self.max_scroll_y > 0.0 {
+            self.rect.y
+                + self.theme.title_thickness
+                + (self.scroll_y / self.max_scroll_y) * (viewport_h - thumb_h)
+        } else {
+            self.rect.y + self.theme.title_thickness
+        };
+
+        draw_rectangle(
+            self.rect.x + self.rect.w - thickness,
+            thumb_y,
+            thickness,
+            thumb_h,
+            match (self.info.scroll_hovered, self.info.scroll_pressed.is_some()) {
+                (true, false) => WHITE.with_alpha(0.4),
+                (_, true) => WHITE.with_alpha(0.6),
+                _ => WHITE.with_alpha(0.2),
+            }
+        );
+    }
 }
 
 /////////////////////////////////////
@@ -294,6 +338,13 @@ impl Window {
         }
 
         self.taken = false;
+        let mut mouse_action = WidgetAction::new();
+        let mut scroll_hov = false;
+        if self.info.scroll_hovered {
+            mouse_action.taken = true;
+            scroll_hov = true;
+        }
+        
         if window_action {
             let (widget_action, holder_rect) = self.widget_holder.update(
                 &self.rect,
@@ -302,27 +353,19 @@ impl Window {
                 self.mouse,
                 self.scroll_y,
                 &self.theme.font,
+                &mut mouse_action
             );
-            if widget_action.taken {
+            if widget_action.taken && !scroll_hov {
                 self.taken = true;
             } else {
-                let wheel = mouse_wheel();
-                if wheel.1 != 0.0 {
-                    self.scroll_y -= wheel.1;
-                } else if wheel.0 != 0.0 {
-                    self.scroll_y += wheel.0;
-                }
-                self.scroll_y = self.scroll_y.clamp(
-                    0.0,
-                    (holder_rect.h - self.rect.h + self.theme.title_thickness).max(0.0),
-                );
+                self.handle_scrolling(&holder_rect);
             }
         }
 
         if self.info.resizable {
-            self.update_resize_handles(window_action, self.taken);
+            self.update_resize_handles(window_action, self.taken || self.scrolling);
         }
-        if self.resizing {
+        if self.resizing || self.scrolling {
             self.taken = true;
         } else if self.info.closable {
             self.handle_close_button(window_action);
@@ -459,9 +502,76 @@ impl Window {
     }
 
     fn update_resize_handles(&mut self, window_action: bool, taken: bool) {
-        self.resize_handles
-            .update(&mut self.rect, window_action, taken);
+        if !self.resize_handles.resizing.is_some() && (self.info.scroll_pressed.is_some() || self.info.scroll_hovered) {
+            self.resize_handles.resizing = None;
+        } else {
+            self.resize_handles
+                .update(&mut self.rect, window_action, taken);
+        }
         self.resizing = self.resize_handles.resizing.is_some();
+    }
+
+    fn handle_scrolling(&mut self, holder_rect: &Rect) {
+        let wheel = mouse_wheel();
+        if wheel.1 != 0.0 {
+            self.scroll_y -= wheel.1;
+        } else if wheel.0 != 0.0 {
+            self.scroll_y += wheel.0;
+        }
+        self.max_scroll_y = (holder_rect.h - self.rect.h + self.theme.title_thickness).max(0.0);
+
+        //////////////////////////////////////////
+        // SCROLL BAR
+        //////////////////////////////////////////
+        
+        if is_mouse_button_released(Left) {
+            self.info.scroll_pressed = None;
+        }
+        
+        if self.max_scroll_y < 5.0 {
+            return;
+        }
+
+        let viewport_h = self.rect.h - self.theme.title_thickness;
+        let content_h = viewport_h + self.max_scroll_y;
+        let thickness = self.theme.scrollbar_thickness;
+
+        let thumb_h = if content_h <= 0.0 {
+            viewport_h
+        } else {
+            (viewport_h / content_h) * viewport_h
+        };
+
+        let thumb_y = if self.max_scroll_y > 0.0 {
+            self.rect.y
+                + self.theme.title_thickness
+                + (self.scroll_y / self.max_scroll_y) * (viewport_h - thumb_h)
+        } else {
+            self.rect.y + self.theme.title_thickness
+        };
+
+        let bar_rect = Rect::new(
+            self.rect.x + self.rect.w - thickness,
+            thumb_y,
+            thickness,
+            thumb_h,
+        );
+        
+        if bar_rect.contains(self.mouse) {
+            self.info.scroll_hovered = true;
+            if is_mouse_button_pressed(Left) {
+                self.info.scroll_pressed = Some(self.mouse.y);
+            }
+        } else {
+            self.info.scroll_hovered = false;
+        }
+        
+        if let Some(start_y) = self.info.scroll_pressed {
+            self.scroll_y += (self.mouse.y - start_y) * self.max_scroll_y / (self.rect.h - self.theme.title_thickness) * 2.0;
+            self.info.scroll_pressed = Some(self.mouse.y);
+        }
+        
+        self.scroll_y = self.scroll_y.clamp(0.0, self.max_scroll_y);
     }
 }
 

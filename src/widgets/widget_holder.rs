@@ -227,6 +227,7 @@ impl WidgetHolder {
         mouse: Vec2,
         scroll_y: f32,
         font: &Option<Font>,
+        mouse_action: &mut WidgetAction,
     ) -> (WidgetAction, Rect) {
         let title_thickness = match show_titlebar {
             false => 0.0,
@@ -238,13 +239,12 @@ impl WidgetHolder {
             0.0,
             0.0,
         );
-        let mut mouse_action = WidgetAction::new();
 
         for i in self.frame_ids.iter() {
             let mut info = UpdateInfo {
                 rect: holder_rect, // by value
-                mouse_action: &mut mouse_action,
                 win_rect: *rect, // also by value
+                mouse_action,
                 hover,
                 mouse,
                 font,
@@ -258,7 +258,7 @@ impl WidgetHolder {
             }
         }
 
-        (mouse_action, holder_rect)
+        (mouse_action.clone(), holder_rect)
     }
 }
 

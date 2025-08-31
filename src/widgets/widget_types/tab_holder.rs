@@ -168,7 +168,7 @@ impl Widget for TabHolder {
                 30.0,
             );
 
-            if rect.contains(info.mouse) {
+            if rect.contains(info.mouse) && !info.mouse_action.taken {
                 self.hovered = i as i16;
                 if (self.holdable && self.pressed) || is_mouse_button_pressed(Left) {
                     self.value = i;

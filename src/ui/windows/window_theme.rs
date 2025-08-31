@@ -5,6 +5,7 @@ use std::fs;
 pub struct WindowTheme {
     pub font: Option<Font>,
     pub title_thickness: f32,
+    pub scrollbar_thickness: f32,
 
     pub background: Color,
     pub inactive_titlebar: Color,
@@ -29,6 +30,7 @@ impl WindowTheme {
                 _ => None,
             },
             title_thickness: 30.0,
+            scrollbar_thickness: 10.0,
 
             background: Color::new(0.1, 0.1, 0.1, 1.0),
             active_titlebar: Color::new(0.2, 0.4, 0.7, 1.0),
