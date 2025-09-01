@@ -297,7 +297,12 @@ impl WidgetHolder {
         font: Option<Font>,
     ) -> &mut TextEx {
         let unique = &self.frame_ids.len().to_string();
-        let new_id = create_widget_id(&format!("TextEx:{unique}"), &self.frame_ids, id, &label);
+        let new_id = create_widget_id(
+            &format!("TextEx:{unique}:{font_size}:{font:?}:{color:?}"),
+            &self.frame_ids,
+            id,
+            &label,
+        );
 
         if !self.widgets.contains_key(&new_id) {
             let w = TextEx::new(label.clone(), color, font_size, font);
@@ -519,17 +524,17 @@ impl WidgetHolder {
             .unwrap();
         b
     }
-    
+
     pub fn textbox(&mut self, id: WidgetId, text: String) -> &mut TextBox {
         let unique = &self.frame_ids.len().to_string();
         let new_id = create_widget_id(&format!("TextBox:{unique}"), &self.frame_ids, id, "");
-        
+
         if !self.widgets.contains_key(&new_id) {
             let w = TextBox::new(text.clone());
             self.widgets.insert(new_id, Box::new(w));
         }
         self.frame_ids.insert(new_id);
-        
+
         // UPDATE STATE
         let b: &mut TextBox = self
             .widgets
