@@ -1,6 +1,6 @@
 [package]
 name = "creeperUI"
-version = "0.1.7"
+version = "0.1.8"
 edition = "2021"
 description = "An imgui inspired Immediate mode GUI library for Macroquad."
 license = "MIT"
@@ -9,6 +9,7 @@ repository = "https://github.com/creepersaur/creeperUI"
 [dependencies]
 macroquad = "0.4.14"
 indexmap = "2"
+arboard = "*"
 owo-colors = "4.2.2"
 
 [profile.release]

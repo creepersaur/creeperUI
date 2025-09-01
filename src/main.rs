@@ -6,48 +6,27 @@ async fn main() {
     let mut ui = UI::new(Some("src/Inter.ttf")).await;
     let mut checked = false;
     let mut x = 5;
-    
+    let mut text_value = String::new();
+
     let font = load_ttf_font("src/bauhs.ttf").await.unwrap();
-    
+
     loop {
-        let win = ui
-            .begin("id")
-            .scope_async(async |win| {
-                let tab = win.tabs((), vec!["Option1", "Option2", "Option3"], 0).value;
+        let win = ui.begin("id").set_title("login window");
+        
+        win.text_ex("Login", WHITE, 30, None);
+        
+        win.separator().color = WHITE.with_alpha(0.0);
 
-                // Option1
-                win.scope_if(tab == 0, |win| {
-                    if win.button((), "Press me").pressed {
-                        win.text("JUMP SCARE");
-                    }
-                    win.text(format!("FPS: {}", get_fps()));
-                });
+        win.text("Username:");
+        text_value = win.textbox((), text_value).value.clone();
+        
+        win.text("Password:");
+        text_value = win.textbox((), text_value).value.clone();
 
-                // Option2
-                win.scope_if(tab == 1, |win| {
-                    win.text_ex("Hello", RED, 30, Some(font.clone()));
-
-                    win.text("This is option 2");
-                    win.button((), "Hello World");
-                });
-
-                // Option3
-                win.scope_async_if(tab == 2, async |win| {
-                    win.image((), "src/job_app.png", Some(vec2(290.0, 400.0)))
-                        .await;
-                })
-                .await;
-            })
-            .await;
-
-        test_window(win, &mut checked, &mut x).await;
-
-        if !ui.taken && is_mouse_button_pressed(MouseButton::Left) {
-            println!("Yes: {}", get_frame_time() * 1000.0);
-        }
+        win.separator();
+        win.button((), "Login");
 
         ui.draw();
-
         // println!("Frame Time: {:2}ms", get_frame_time() * 1000.0);
         next_frame().await
     }

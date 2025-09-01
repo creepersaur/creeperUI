@@ -8,7 +8,9 @@ mod slider;
 mod tab_holder;
 pub mod text;
 pub mod text_ex;
+mod textbox;
 
+pub use text::Text;
 pub use button::Button;
 pub use checkbox::Checkbox;
 pub use dropdown::Dropdown;
@@ -17,4 +19,4 @@ pub use progress_bar::{ProgressBar, ProgressInfo};
 pub use separator::Separator;
 pub use slider::{Slider, SliderInfo};
 pub use tab_holder::TabHolder;
-pub use text::Text;
+pub use textbox::TextBox;

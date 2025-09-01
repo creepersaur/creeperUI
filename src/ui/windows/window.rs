@@ -134,7 +134,7 @@ impl Window {
         self.info.scrollable = scrollable;
         self
     }
-    
+
     pub fn set_active(&mut self, active: bool) -> &mut Window {
         self.active = active;
         self
@@ -286,7 +286,7 @@ impl Window {
         if self.max_scroll_y < 5.0 {
             return;
         }
-        
+
         let viewport_h = self.rect.h - self.theme.title_thickness;
         let content_h = viewport_h + self.max_scroll_y;
         let thickness = self.theme.scrollbar_thickness;
@@ -314,7 +314,7 @@ impl Window {
                 (true, false) => WHITE.with_alpha(0.4),
                 (_, true) => WHITE.with_alpha(0.6),
                 _ => WHITE.with_alpha(0.2),
-            }
+            },
         );
     }
 }
@@ -350,7 +350,7 @@ impl Window {
             mouse_action.taken = true;
             scroll_hov = true;
         }
-        
+
         if window_action {
             let (widget_action, holder_rect) = self.widget_holder.update(
                 &self.rect,
@@ -359,7 +359,7 @@ impl Window {
                 self.mouse,
                 self.scroll_y,
                 &self.theme.font,
-                &mut mouse_action
+                &mut mouse_action,
             );
             if widget_action.taken && !scroll_hov {
                 self.taken = true;
@@ -508,7 +508,9 @@ impl Window {
     }
 
     fn update_resize_handles(&mut self, window_action: bool, taken: bool) {
-        if !self.resize_handles.resizing.is_some() && (self.info.scroll_pressed.is_some() || self.info.scroll_hovered) {
+        if !self.resize_handles.resizing.is_some()
+            && (self.info.scroll_pressed.is_some() || self.info.scroll_hovered)
+        {
             self.resize_handles.resizing = None;
         } else {
             self.resize_handles
@@ -529,11 +531,11 @@ impl Window {
         //////////////////////////////////////////
         // SCROLL BAR
         //////////////////////////////////////////
-        
+
         if is_mouse_button_released(Left) {
             self.info.scroll_pressed = None;
         }
-        
+
         if self.max_scroll_y < 5.0 {
             return;
         }
@@ -562,7 +564,7 @@ impl Window {
             thickness,
             thumb_h,
         );
-        
+
         if bar_rect.contains(self.mouse) {
             self.info.scroll_hovered = true;
             if is_mouse_button_pressed(Left) {
@@ -571,12 +573,14 @@ impl Window {
         } else {
             self.info.scroll_hovered = false;
         }
-        
+
         if let Some(start_y) = self.info.scroll_pressed {
-            self.scroll_y += (self.mouse.y - start_y) * self.max_scroll_y / (self.rect.h - self.theme.title_thickness) * 2.0;
+            self.scroll_y += (self.mouse.y - start_y) * self.max_scroll_y
+                / (self.rect.h - self.theme.title_thickness)
+                * 2.0;
             self.info.scroll_pressed = Some(self.mouse.y);
         }
-        
+
         self.scroll_y = self.scroll_y.clamp(0.0, self.max_scroll_y);
     }
 }
@@ -720,5 +724,9 @@ impl Window {
             tabs.iter().map(|x| x.to_string()).collect(),
             default_tab,
         )
+    }
+    
+    pub fn textbox(&mut self, id: impl Into<WidgetId>, default_text: impl ToString) -> &mut TextBox {
+        self.widget_holder.textbox(id.into(), default_text.to_string())
     }
 }

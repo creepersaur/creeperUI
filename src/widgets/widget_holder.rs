@@ -243,7 +243,7 @@ impl WidgetHolder {
         for i in self.frame_ids.iter() {
             let mut info = UpdateInfo {
                 rect: holder_rect, // by value
-                win_rect: *rect, // also by value
+                win_rect: *rect,   // also by value
                 mouse_action,
                 hover,
                 mouse,
@@ -511,6 +511,27 @@ impl WidgetHolder {
 
         // UPDATE STATE
         let b: &mut TabHolder = self
+            .widgets
+            .get_mut(&new_id)
+            .unwrap()
+            .as_any_mut()
+            .downcast_mut()
+            .unwrap();
+        b
+    }
+    
+    pub fn textbox(&mut self, id: WidgetId, text: String) -> &mut TextBox {
+        let unique = &self.frame_ids.len().to_string();
+        let new_id = create_widget_id(&format!("TextBox:{unique}"), &self.frame_ids, id, "");
+        
+        if !self.widgets.contains_key(&new_id) {
+            let w = TextBox::new(text.clone());
+            self.widgets.insert(new_id, Box::new(w));
+        }
+        self.frame_ids.insert(new_id);
+        
+        // UPDATE STATE
+        let b: &mut TextBox = self
             .widgets
             .get_mut(&new_id)
             .unwrap()
