@@ -101,6 +101,7 @@ impl Window {
         self.info.draggable = properties.draggable;
         self.info.resizable = properties.resizable;
         self.info.closable = properties.closable;
+        self.info.scrollable = properties.scrollable;
         if let Some(title) = properties.title {
             self.title = title;
         }
@@ -129,6 +130,11 @@ impl Window {
         self
     }
 
+    pub fn set_scrollable(&mut self, scrollable: bool) -> &mut Window {
+        self.info.scrollable = scrollable;
+        self
+    }
+    
     pub fn set_active(&mut self, active: bool) -> &mut Window {
         self.active = active;
         self

@@ -14,6 +14,7 @@ pub struct WindowInfo {
     pub draggable: bool,
     pub resizable: bool,
     pub closable: bool,
+    pub scrollable: bool,
 }
 
 impl WindowInfo {
@@ -23,6 +24,7 @@ impl WindowInfo {
             draggable: true,
             resizable: true,
             closable: true,
+            scrollable: true,
 
             ..Default::default()
         }

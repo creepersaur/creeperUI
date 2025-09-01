@@ -7,6 +7,7 @@ pub struct WindowProperties {
     pub draggable: bool,
     pub resizable: bool,
     pub closable: bool,
+    pub scrollable: bool,
 }
 
 impl Default for WindowProperties {
@@ -18,6 +19,7 @@ impl Default for WindowProperties {
             draggable: true,
             resizable: true,
             closable: true,
+            scrollable: true,
         }
     }
 }
