@@ -43,16 +43,29 @@ impl Widget for Separator {
     }
 
     fn render(&self, info: &mut RenderInfo) -> Option<Vec2> {
-        draw_line(
-            5.0,
-            info.rect.y + info.rect.h + self.padding + (self.thickness / 4.0).floor(),
-            info.win_rect.w - 15.0,
-            info.rect.y + info.rect.h + self.padding + (self.thickness / 4.0).floor(),
-            self.thickness,
-            self.color,
-        );
-
-        Some(vec2(info.rect.w, self.padding * 2.0))
+        if info.same_line {
+            draw_line(
+                info.rect.x + self.padding + (self.thickness / 4.0).floor(),
+                info.rect.y,
+                info.rect.x + self.padding + (self.thickness / 4.0).floor(),
+                info.rect.y + 10.0 + info.rect.h,
+                self.thickness,
+                self.color,
+            );
+            
+            Some(vec2(self.padding * 2.0, 0.0))
+        } else {
+            draw_line(
+                5.0,
+                info.rect.y + info.rect.h + self.padding + (self.thickness / 4.0).floor(),
+                info.win_rect.w - 15.0,
+                info.rect.y + info.rect.h + self.padding + (self.thickness / 4.0).floor(),
+                self.thickness,
+                self.color,
+            );
+            
+            Some(vec2(info.rect.w, self.padding * 2.0))
+        }
     }
 
     fn update(&mut self, info: &mut UpdateInfo) -> Option<Vec2> {

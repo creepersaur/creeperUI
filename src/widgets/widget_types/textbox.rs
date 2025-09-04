@@ -10,6 +10,7 @@ use crate::widget_holder::{RenderInfo, UpdateInfo};
 pub struct TextBox {
 	pub value: String,
 	pub caret: usize,
+	pub label: Option<String>,
 	
 	selection_start: i32,
 	selection_end: i32,
@@ -32,8 +33,9 @@ pub struct TextBox {
 }
 
 impl TextBox {
-	pub fn new(default_text: String) -> Self {
+	pub fn new(default_text: String, label: Option<String>) -> Self {
 		Self {
+			label,
 			value: default_text,
 			
 			caret: 0,
@@ -57,7 +59,6 @@ impl TextBox {
 	}
 }
 
-
 impl Widget for TextBox {
 	fn as_any(&self) -> &dyn Any {
 		self
@@ -72,8 +73,13 @@ impl Widget for TextBox {
 		let caret_dim = measure_text(&self.value[0..self.caret], font, 14, 1.0);
 		let text_dim = measure_text(&self.value, font, 14, 1.0);
 		
+		let label_width = match &self.label {
+			Some(s) => measure_text(s, font, 14, 1.0).width + 10.0,
+			_ => 0.0
+		};
+		
 		draw_rectangle(
-			0.0,
+			info.rect.x + label_width,
 			info.rect.y + info.rect.h,
 			(text_dim.width + 10.0).max(100.0),
 			char_dim.height + 10.0,
@@ -84,7 +90,7 @@ impl Widget for TextBox {
 		);
 		
 		draw_rectangle_lines(
-			0.0,
+			info.rect.x + label_width,
 			info.rect.y + info.rect.h,
 			(text_dim.width + 10.0).max(100.0),
 			char_dim.height + 10.0,
@@ -97,7 +103,7 @@ impl Widget for TextBox {
 		
 		if self.editing {
 			draw_rectangle_lines(
-				00.0,
+				info.rect.x + label_width,
 				info.rect.y + info.rect.h,
 				(text_dim.width + 10.0).max(100.0),
 				char_dim.height + 10.0,
@@ -107,9 +113,9 @@ impl Widget for TextBox {
 			
 			// DRAW CARET
 			draw_line(
-				caret_dim.width + 5.0,
+				info.rect.x + label_width + caret_dim.width + 5.0,
 				info.rect.y + info.rect.h + 2.0,
-				caret_dim.width + 5.0,
+				info.rect.x + label_width + caret_dim.width + 5.0,
 				info.rect.y + info.rect.h +char_dim.height + 8.0,
 				1.0,
 				WHITE,
@@ -127,7 +133,7 @@ impl Widget for TextBox {
 					- start_pos;
 				
 				draw_rectangle(
-					5.0 + start_pos,
+					info.rect.x + label_width + 5.0 + start_pos,
 					info.rect.y + info.rect.h + 2.0,
 					length,
 					char_dim.height + 6.0,
@@ -139,7 +145,7 @@ impl Widget for TextBox {
 		for _ in 0..4 {
 			draw_text_ex(
 				&self.value,
-				5.0,
+				info.rect.x + label_width + 5.0,
 				info.rect.y + info.rect.h + char_dim.height + 4.0,
 				TextParams {
 					font,
@@ -150,7 +156,24 @@ impl Widget for TextBox {
 			);
 		}
 		
-		Some(vec2((text_dim.width + 10.0).max(100.0), char_dim.height + 10.0))
+		// DRAW OPTIONAL LABEL
+		if let Some(s) = &self.label {
+			for _ in 0..4 {
+				draw_text_ex(
+					s,
+					info.rect.x,
+					info.rect.y + info.rect.h + char_dim.height + 4.0,
+					TextParams {
+						font,
+						font_size: 14,
+						color: WHITE,
+						..Default::default()
+					},
+				);
+			}
+		}
+		
+		Some(vec2((text_dim.width + 10.0).max(100.0) + label_width, char_dim.height + 10.0))
 	}
 	
 	fn update(&mut self, info: &mut UpdateInfo) -> Option<Vec2> {
@@ -160,21 +183,25 @@ impl Widget for TextBox {
 		let font = info.font.into();
 		let char_dim = measure_text("A", font, 14, 1.0);
 		let text_dim = measure_text(&self.value, font, 14, 1.0);
+		let label_width = match &self.label {
+			Some(s) => measure_text(s, font, 14, 1.0).width + 10.0,
+			_ => 0.0
+		};
+		
 		let rect = Rect::new(
-			info.rect.x,
+			label_width + info.rect.x,
 			info.rect.y + info.rect.h,
 			(text_dim.width + 10.0).max(100.0),
 			char_dim.height + 10.0,
 		);
 		
-		let size = Some(vec2(rect.w, rect.h));
+		let size = Some(vec2(rect.w + label_width, rect.h));
 		
 		if !info.mouse_action.taken && rect.contains(mouse_position().into()) {
 			self.hovered = true;
 			set_mouse_cursor(CursorIcon::Text);
 		} else {
 			self.hovered = false;
-			set_mouse_cursor(CursorIcon::Default)
 		}
 		
 		if info.mouse_action.taken {

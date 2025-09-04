@@ -2,12 +2,15 @@ use crate::widgets::widget::Widget;
 use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
 use macroquad::prelude::*;
 use std::any::Any;
+use std::ops::Add;
 
 pub struct Button {
     pub value: String,
     pub hovered: bool,
     pub pressed: bool,
     pub clicked: bool,
+    
+    background: Color,
 }
 
 impl Button {
@@ -17,7 +20,15 @@ impl Button {
             hovered: false,
             pressed: false,
             clicked: false,
+            
+            background: Color::new(0.1, 0.3, 0.5, 0.9),
         }
+    }
+    
+    pub fn set_background(&mut self, color: Color) -> &mut Self {
+        self.background = color;
+        
+        self
     }
 }
 
@@ -39,23 +50,28 @@ impl Widget for Button {
             14,
             1.0,
         );
+        
+        let vertical_height = match info.same_line {
+            true => 0.0,
+            _ => info.rect.h
+        };
 
         draw_rectangle(
-            0.0,
-            info.rect.y + info.rect.h,
+            info.rect.x,
+            info.rect.y + vertical_height,
             text_dim.width + 10.0,
             text_dim.height + 10.0,
             match (self.hovered, self.pressed) {
-                (true, false) => Color::new(0.2, 0.4, 0.7, 0.9), // HOVER
-                (_, true) => Color::new(0.3, 0.5, 0.8, 1.0),     // PRESSED
-                _ => Color::new(0.1, 0.3, 0.5, 0.9),
+                (true, false) => Color::from_vec(self.background.to_vec().add(vec4(0.1, 0.1, 0.2, 0.0))), // HOVER
+                (_, true) => Color::from_vec(self.background.to_vec().add(vec4(0.2, 0.2, 0.3, 0.1))),     // PRESSED
+                _ => self.background,
             },
         );
 
         if self.pressed {
             draw_rectangle_lines(
-                0.0,
-                info.rect.y + info.rect.h,
+                info.rect.x,
+                info.rect.y + vertical_height,
                 text_dim.width + 10.0,
                 text_dim.height + 10.0,
                 2.0,
@@ -66,8 +82,8 @@ impl Widget for Button {
         for _ in 0..4 {
             draw_text_ex(
                 &self.value.to_string(),
-                5.0,
-                info.rect.y + text_dim.height + info.rect.h + 5.0,
+                info.rect.x + 5.0,
+                info.rect.y + text_dim.height + 5.0 + vertical_height,
                 TextParams {
                     font: match &info.font {
                         Some(f) => Some(&f),
@@ -80,7 +96,7 @@ impl Widget for Button {
             );
         }
 
-        Some(vec2(text_dim.width, text_dim.height + 10.0))
+        Some(vec2(text_dim.width + 10.0, text_dim.height))
     }
 
     fn update(&mut self, info: &mut UpdateInfo) -> Option<Vec2> {
@@ -93,10 +109,15 @@ impl Widget for Button {
             14,
             1.0,
         );
+        
+        let vertical_height = match info.same_line {
+            true => 0.0,
+            _ => info.rect.h
+        };
 
         let rect = Rect::new(
             info.rect.x,
-            info.rect.y + info.rect.h,
+            info.rect.y + vertical_height,
             text_dim.width + 10.0,
             text_dim.height + 10.0,
         );
@@ -118,6 +139,6 @@ impl Widget for Button {
             self.pressed = false;
         }
 
-        Some(vec2(text_dim.width, text_dim.height + 10.0))
+        Some(vec2(text_dim.width + 10.0, text_dim.height))
     }
 }

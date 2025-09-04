@@ -31,12 +31,17 @@ impl Widget for Text {
             14,
             1.0,
         );
+        
+        let vertical_height = match info.same_line {
+            true => 0.0,
+            _ => info.rect.h
+        };
 
         for _ in 0..4 {
             draw_text_ex(
                 &self.value.to_string(),
-                0.0,
-                info.rect.y + text_dim.height + info.rect.h,
+                info.rect.x,
+                info.rect.y + text_dim.height + 2.0 + vertical_height,
                 TextParams {
                     font: match &info.font {
                         Some(f) => Some(&f),

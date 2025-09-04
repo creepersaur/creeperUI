@@ -7,15 +7,6 @@ use macroquad::prelude::*;
 use std::collections::HashMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
 
-pub struct UpdateInfo<'a> {
-    pub rect: Rect,
-    pub mouse_action: &'a mut WidgetAction,
-    pub hover: bool,
-    pub mouse: Vec2,
-    pub font: &'a Option<Font>,
-    pub win_rect: Rect,
-}
-
 pub struct RenderInfo<'a> {
     pub rect: Rect,
     pub cam_1: &'a Camera2D,
@@ -23,11 +14,23 @@ pub struct RenderInfo<'a> {
     pub cam_3: &'a Camera2D,
     pub font: &'a Option<Font>,
     pub win_rect: Rect,
+    pub same_line: bool,
+}
+
+pub struct UpdateInfo<'a> {
+    pub rect: Rect,
+    pub mouse_action: &'a mut WidgetAction,
+    pub hover: bool,
+    pub mouse: Vec2,
+    pub font: &'a Option<Font>,
+    pub win_rect: Rect,
+    pub same_line: bool,
 }
 
 pub type WidgetIdNum = u64;
 
 pub struct WidgetHolder {
+    pub same_line: bool,
     pub(crate) widgets: HashMap<WidgetIdNum, Box<dyn Widget>>,
     pub(crate) frame_ids: IndexSet<WidgetIdNum>,
 
@@ -37,8 +40,9 @@ pub struct WidgetHolder {
 }
 
 impl WidgetHolder {
-    pub fn new() -> Self {
+    pub fn new(same_line: bool) -> Self {
         Self {
+            same_line,
             widgets: HashMap::new(),
             frame_ids: IndexSet::new(),
 
@@ -130,7 +134,7 @@ impl WidgetHolder {
         let target_2 = self.target_2.as_ref().unwrap();
         let target_3 = self.target_3.as_ref().unwrap();
 
-        let mut holder_rect = Rect::new(rect.x + 5.0, -scroll_y, 0.0, 0.0);
+        let mut holder_rect = Rect::new(0.0, -scroll_y, 0.0, 0.0);
         let cam_1 = &Camera2D {
             zoom: vec2(zoom_x, zoom_y),
             target: vec2(1.0 / zoom_x, 1.0 / zoom_y),
@@ -166,6 +170,7 @@ impl WidgetHolder {
             let mut info = RenderInfo {
                 rect: holder_rect,
                 win_rect: *rect,
+                same_line: self.same_line,
                 font,
                 cam_1,
                 cam_2,
@@ -175,9 +180,19 @@ impl WidgetHolder {
             let widget_size = self.widgets.get(i).unwrap().render(&mut info);
 
             if let Some(size) = widget_size {
-                holder_rect.h += size.y + 5.0;
-                if holder_rect.w < size.x {
-                    holder_rect.w = size.x
+                if self.same_line {
+                    let padding = 5.0;
+                    holder_rect.x += size.x + padding;
+                    
+                    if size.y > holder_rect.h  {
+                        holder_rect.h = size.y
+                    }
+                } else {
+                    holder_rect.h += size.y + 5.0;
+                    
+                    if size.x > holder_rect.w {
+                        holder_rect.w = size.x
+                    }
                 }
             }
 
@@ -244,16 +259,29 @@ impl WidgetHolder {
             let mut info = UpdateInfo {
                 rect: holder_rect, // by value
                 win_rect: *rect,   // also by value
+                same_line: self.same_line,
                 mouse_action,
                 hover,
                 mouse,
                 font,
             };
 
-            if let Some(size) = self.widgets.get_mut(i).unwrap().update(&mut info) {
-                holder_rect.h += size.y + 5.0;
-                if holder_rect.w < size.x {
-                    holder_rect.w = size.x
+            let widget_size = self.widgets.get_mut(i).unwrap().update(&mut info);
+            
+            if let Some(size) = widget_size {
+                if self.same_line {
+                    let padding = 5.0;
+                    holder_rect.x += size.x + padding;
+                    
+                    if size.y > holder_rect.h  {
+                        holder_rect.h = size.y
+                    }
+                } else {
+                    holder_rect.h += size.y + 5.0;
+                    
+                    if size.x > holder_rect.w {
+                        holder_rect.w = size.x
+                    }
                 }
             }
         }
@@ -530,11 +558,32 @@ impl WidgetHolder {
         let new_id = create_widget_id(&format!("TextBox:{unique}"), &self.frame_ids, id, "");
 
         if !self.widgets.contains_key(&new_id) {
-            let w = TextBox::new(text.clone());
+            let w = TextBox::new(text.clone(), None);
             self.widgets.insert(new_id, Box::new(w));
         }
         self.frame_ids.insert(new_id);
 
+        // UPDATE STATE
+        let b: &mut TextBox = self
+            .widgets
+            .get_mut(&new_id)
+            .unwrap()
+            .as_any_mut()
+            .downcast_mut()
+            .unwrap();
+        b
+    }
+    
+    pub fn labeled_textbox(&mut self, id: WidgetId, label: String, text: String) -> &mut TextBox {
+        let unique = &self.frame_ids.len().to_string();
+        let new_id = create_widget_id(&format!("LabeledTextBox:{unique}"), &self.frame_ids, id, "");
+        
+        if !self.widgets.contains_key(&new_id) {
+            let w = TextBox::new(text.clone(), Some(label));
+            self.widgets.insert(new_id, Box::new(w));
+        }
+        self.frame_ids.insert(new_id);
+        
         // UPDATE STATE
         let b: &mut TextBox = self
             .widgets

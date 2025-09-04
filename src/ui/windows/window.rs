@@ -40,7 +40,7 @@ impl Window {
             rect: Rect::new(0.0, 0.0, 200.0, 150.0),
             info: WindowInfo::new(),
             resize_handles: WindowResizeHandles::new(),
-            widget_holder: WidgetHolder::new(),
+            widget_holder: WidgetHolder::new(true),
             scroll_y: 0.0,
             max_scroll_y: 0.0,
             scrolling: false,
@@ -728,5 +728,9 @@ impl Window {
     
     pub fn textbox(&mut self, id: impl Into<WidgetId>, default_text: impl ToString) -> &mut TextBox {
         self.widget_holder.textbox(id.into(), default_text.to_string())
+    }
+    
+    pub fn labeled_textbox(&mut self, id: impl Into<WidgetId>, label: impl ToString, default_text: impl ToString) -> &mut TextBox {
+        self.widget_holder.labeled_textbox(id.into(), label.to_string(), default_text.to_string())
     }
 }

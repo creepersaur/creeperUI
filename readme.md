@@ -135,6 +135,7 @@ win.progress_bar(id, "Label", ProgressInfo);
 // TextBox allows you to enter in String values
 // use `.value` to get the value. You must `.clone()` the value as well.
 win.textbox((), default_text);
+win.labeled_textbox((), label, default_text);
 
 // Tabs are kinda like dropdowns, but horizontal
 // They take a vector of options and the default value (as a number)

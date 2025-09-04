@@ -65,7 +65,7 @@ impl Widget for Slider {
         for _ in 0..4 {
             draw_text_ex(
                 &self.text.to_string(),
-                0.0,
+                info.rect.x,
                 info.rect.y + text_dim.height + info.rect.h + 5.0,
                 TextParams {
                     font: match &info.font {
@@ -82,7 +82,7 @@ impl Widget for Slider {
         // BASE BAR
         let r_width = info.win_rect.w - text_dim.width - 15.0;
         draw_rectangle(
-            text_dim.width + 5.0,
+            info.rect.x + text_dim.width + 5.0,
             info.rect.y + info.rect.h + 5.0,
             r_width,
             text_dim.height + 4.0,
@@ -100,7 +100,7 @@ impl Widget for Slider {
         };
 
         draw_rectangle(
-            text_dim.width
+            info.rect.x + text_dim.width
                 + 5.0
                 + (((self.value - min) / (max - min)) as f32) * (r_width - self.value_thickness),
             info.rect.y + info.rect.h + 5.0,
@@ -117,7 +117,7 @@ impl Widget for Slider {
                     "int" => (self.value as i32).to_string(),
                     _ => String::new(),
                 },
-                text_dim.width + 15.0,
+                info.rect.x + text_dim.width + 15.0,
                 info.rect.y + text_dim.height + info.rect.h + 5.0,
                 TextParams {
                     font: match &info.font {

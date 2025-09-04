@@ -44,7 +44,7 @@ impl Widget for TextEx {
         for _ in 0..4 {
             draw_text_ex(
                 &self.value.to_string(),
-                0.0,
+                info.rect.x,
                 info.rect.y + text_dim.height + info.rect.h,
                 TextParams {
                     font,

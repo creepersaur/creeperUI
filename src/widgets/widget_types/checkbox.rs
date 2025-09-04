@@ -41,12 +41,17 @@ impl Widget for Checkbox {
             14,
             1.0,
         );
-
+        
+        let vertical_height = match info.same_line {
+            true => 0.0,
+            _ => info.rect.h
+        };
+        
         for _ in 0..4 {
             draw_text_ex(
                 &self.text.to_string(),
-                text_dim.height + 10.0,
-                info.rect.y + text_dim.height + info.rect.h + 2.0,
+                info.rect.x + text_dim.height + 10.0,
+                info.rect.y + text_dim.height + vertical_height + 2.0,
                 TextParams {
                     font: match &info.font {
                         Some(f) => Some(&f),
@@ -63,8 +68,8 @@ impl Widget for Checkbox {
         }
 
         draw_rectangle(
-            0.0,
-            info.rect.y + info.rect.h,
+            info.rect.x,
+            info.rect.y + vertical_height,
             text_dim.height + 5.0,
             text_dim.height + 5.0,
             match (self.hovered, self.pressed) {
@@ -76,8 +81,8 @@ impl Widget for Checkbox {
 
         if self.pressed {
             draw_rectangle_lines(
-                0.0,
-                info.rect.y + info.rect.h,
+                info.rect.x,
+                info.rect.y + vertical_height,
                 text_dim.height + 5.0,
                 text_dim.height + 5.0,
                 2.0,
@@ -87,27 +92,27 @@ impl Widget for Checkbox {
 
         if self.value {
             draw_rectangle(
-                1.0,
-                info.rect.y + info.rect.h + 1.0,
+                info.rect.x + 1.0,
+                info.rect.y + vertical_height + 1.0,
                 text_dim.height + 3.0,
                 text_dim.height + 3.0,
                 Color::new(0.3, 0.7, 1.0, 1.0),
             );
 
             draw_line(
-                4.0,
-                info.rect.y + info.rect.h + 8.0,
-                6.0,
-                info.rect.y + text_dim.height + info.rect.h + 3.0,
+                info.rect.x + 4.0,
+                info.rect.y + vertical_height + 8.0,
+                info.rect.x + 6.0,
+                info.rect.y + text_dim.height + vertical_height + 3.0,
                 3.0,
                 WHITE,
             );
 
             draw_line(
-                6.0,
-                info.rect.y + text_dim.height + info.rect.h + 3.0,
-                text_dim.height + 2.0,
-                info.rect.y + info.rect.h + 2.0,
+                info.rect.x + 6.0,
+                info.rect.y + text_dim.height + vertical_height + 3.0,
+                info.rect.x + text_dim.height + 2.0,
+                info.rect.y + vertical_height + 2.0,
                 3.0,
                 WHITE,
             )
@@ -129,10 +134,15 @@ impl Widget for Checkbox {
             14,
             1.0,
         );
-
+        
+        let vertical_height = match info.same_line {
+            true => 0.0,
+            _ => info.rect.h
+        };
+        
         let rect = Rect::new(
-            info.rect.x,
-            info.rect.y + info.rect.h,
+            info.rect.x + text_dim.height + 7.0,
+            info.rect.y + vertical_height,
             text_dim.width + text_dim.height + 10.0,
             text_dim.height + 10.0,
         );
