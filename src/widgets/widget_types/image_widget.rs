@@ -26,10 +26,15 @@ impl Widget for ImageWidget {
     }
 
     fn render(&self, info: &mut RenderInfo) -> Option<Vec2> {
+        let vertical_height = match info.same_line {
+            true => 0.0,
+            _ => info.rect.h
+        };
+        
         draw_texture_ex(
             &self.texture,
-            0.0,
-            info.rect.y + info.rect.h,
+            info.rect.x,
+            info.rect.y + vertical_height,
             WHITE,
             DrawTextureParams {
                 dest_size: self.size,

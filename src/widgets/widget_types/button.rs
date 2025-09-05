@@ -96,7 +96,7 @@ impl Widget for Button {
             );
         }
 
-        Some(vec2(text_dim.width + 10.0, text_dim.height))
+        Some(vec2(text_dim.width + 10.0, text_dim.height + 10.0))
     }
 
     fn update(&mut self, info: &mut UpdateInfo) -> Option<Vec2> {
@@ -139,6 +139,6 @@ impl Widget for Button {
             self.pressed = false;
         }
 
-        Some(vec2(text_dim.width + 10.0, text_dim.height))
+        Some(vec2(text_dim.width + 10.0, text_dim.height + 10.0))
     }
 }

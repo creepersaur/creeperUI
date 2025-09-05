@@ -52,10 +52,15 @@ impl Widget for Dropdown {
             14,
             1.0,
         );
+        
+        let vertical_height = match info.same_line {
+            true => 0.0,
+            _ => info.rect.h
+        };
 
         draw_rectangle(
-            0.0,
-            info.rect.y + info.rect.h,
+            info.rect.x,
+            info.rect.y + vertical_height,
             text_dim.width + 10.0,
             text_dim.height + 10.0,
             match (self.hovered, self.pressed) {
@@ -66,27 +71,27 @@ impl Widget for Dropdown {
         );
 
         draw_rectangle(
-            text_dim.width + 10.0,
-            info.rect.y + info.rect.h,
+            info.rect.x + text_dim.width + 10.0,
+            info.rect.y + vertical_height,
             text_dim.height + 10.0,
             text_dim.height + 10.0,
             Color::new(0.4, 0.7, 1.0, 1.0),
         );
 
         draw_line(
-            text_dim.width + 15.0,
-            info.rect.y + info.rect.h + 9.0,
-            text_dim.width + 20.0,
-            info.rect.y + info.rect.h + 15.0,
+            info.rect.x + text_dim.width + 15.0,
+            info.rect.y + vertical_height + 9.0,
+            info.rect.x + text_dim.width + 20.0,
+            info.rect.y + vertical_height + 15.0,
             2.0,
             WHITE,
         );
 
         draw_line(
-            text_dim.width + 20.0,
-            info.rect.y + info.rect.h + 15.0,
-            text_dim.width + 24.0,
-            info.rect.y + info.rect.h + 9.0,
+            info.rect.x + text_dim.width + 20.0,
+            info.rect.y + vertical_height + 15.0,
+            info.rect.x + text_dim.width + 24.0,
+            info.rect.y + vertical_height + 9.0,
             2.0,
             WHITE,
         );
@@ -104,8 +109,8 @@ impl Widget for Dropdown {
         for _ in 0..4 {
             draw_text_ex(
                 &self.value,
-                (text_dim.width - value_dim.width + 10.0) / 2.0,
-                info.rect.y + info.rect.h + text_dim.height * 2.0 - 5.0,
+                info.rect.x + (text_dim.width - value_dim.width + 10.0) / 2.0,
+                info.rect.y + vertical_height + text_dim.height * 2.0 - 5.0,
                 TextParams {
                     color: WHITE,
                     font: match &info.font {
@@ -180,8 +185,8 @@ impl Widget for Dropdown {
             set_camera(info.cam_3);
 
             draw_rectangle(
-                0.0,
-                info.rect.y + info.rect.h + text_dim.height + 10.0,
+                info.rect.x,
+                info.rect.y + vertical_height + text_dim.height + 10.0,
                 text_dim.width + 10.0,
                 ((text_dim.height + 10.0) * self.items.len() as f32 + 10.0)
                     .max(0.0)
@@ -190,8 +195,8 @@ impl Widget for Dropdown {
             );
 
             draw_rectangle_lines(
-                0.0,
-                info.rect.y + info.rect.h + text_dim.height + 10.0,
+                info.rect.x,
+                info.rect.y + vertical_height + text_dim.height + 10.0,
                 text_dim.width + 10.0,
                 ((text_dim.height + 10.0) * self.items.len() as f32 + 10.0)
                     .max(0.0)
@@ -202,8 +207,8 @@ impl Widget for Dropdown {
 
             draw_texture_ex(
                 &target.texture,
-                0.0,
-                info.rect.y + info.rect.h + text_dim.height + 10.0,
+                info.rect.x,
+                info.rect.y + vertical_height + text_dim.height + 10.0,
                 WHITE,
                 DrawTextureParams {
                     source: Some(Rect::new(
@@ -219,7 +224,7 @@ impl Widget for Dropdown {
             set_camera(info.cam_1);
         }
 
-        Some(vec2(text_dim.width, text_dim.height + 10.0))
+        Some(vec2(text_dim.width + text_dim.height * 2.0 + 10.0, text_dim.height + 10.0))
     }
 
     fn update(&mut self, info: &mut UpdateInfo) -> Option<Vec2> {
@@ -232,10 +237,15 @@ impl Widget for Dropdown {
             14,
             1.0,
         );
+        
+        let vertical_height = match info.same_line {
+            true => 0.0,
+            _ => info.rect.h
+        };
 
         let rect = Rect::new(
             info.rect.x,
-            info.rect.y + info.rect.h,
+            info.rect.y + vertical_height,
             text_dim.width + text_dim.height + 20.0,
             text_dim.height + 10.0,
         );
@@ -316,6 +326,6 @@ impl Widget for Dropdown {
             self.item_pressed = false;
         }
 
-        Some(vec2(text_dim.width, text_dim.height + 10.0))
+        Some(vec2(text_dim.width + text_dim.height * 2.0 + 10.0, text_dim.height + 10.0))
     }
 }

@@ -2,17 +2,21 @@ use crate::text_ex::TextEx;
 use crate::ui::mouse_action::{MouseAction, WidgetAction};
 use crate::ui::windows::win_resize_handles::WindowResizeHandles;
 use crate::ui::windows::window_info::WindowInfo;
-use crate::widget_holder::WidgetHolder;
+use crate::widget_holder::{GlobalRenderTargets, WidgetHolder};
 use crate::widgets::*;
 use crate::{ActionType, WindowId, WindowProperties, WindowTheme};
+use indexmap::IndexSet;
 use macroquad::input::MouseButton::Left;
 use macroquad::prelude::*;
+use std::collections::HashMap;
+use std::hash::{DefaultHasher, Hash, Hasher};
 
 pub struct Window {
     pub id: WindowId,
     pub title: String,
     pub rect: Rect,
-    pub widget_holder: WidgetHolder,
+    pub widget_holders: HashMap<String, WidgetHolder>, // Changed to HashMap
+    pub holder_ids: IndexSet<String>,                  // Retained for order
     pub info: WindowInfo,
     pub taken: bool,
     theme: WindowTheme,
@@ -20,6 +24,7 @@ pub struct Window {
     pub scroll_y: f32,
     pub max_scroll_y: f32,
     pub scrolling: bool,
+    render_targets: GlobalRenderTargets,
 
     mouse: Vec2,
     pub open: bool,
@@ -40,10 +45,12 @@ impl Window {
             rect: Rect::new(0.0, 0.0, 200.0, 150.0),
             info: WindowInfo::new(),
             resize_handles: WindowResizeHandles::new(),
-            widget_holder: WidgetHolder::new(true),
+            widget_holders: HashMap::from([(String::from("__Main__"), WidgetHolder::new(false))]),
+            holder_ids: IndexSet::from([String::from("__Main__")]),
             scroll_y: 0.0,
             max_scroll_y: 0.0,
             scrolling: false,
+            render_targets: GlobalRenderTargets::default(),
 
             open: true,
             mouse: mouse_position().into(),
@@ -177,13 +184,7 @@ impl Window {
             self.theme.background,
         );
 
-        // DRAW TOP-LAYER OF WIDGETS
-        let target_3 = self.widget_holder.render(
-            &self.rect,
-            self.info.show_titlebar,
-            self.scroll_y,
-            &self.theme.font,
-        );
+        self.start_widget_render();
 
         self.draw_scrollbar();
 
@@ -209,16 +210,122 @@ impl Window {
                 _ => self.theme.win_stroke,
             },
         );
+        
+        if let Some(target) = &self.render_targets.target_3 {
+            draw_texture_ex(
+                &target.texture,
+                self.rect.x + 5.0,
+                self.rect.y + 5.0 + self.theme.title_thickness,
+                WHITE,
+                DrawTextureParams {
+                    ..Default::default()
+                },
+            );
+        }
+    }
 
-        draw_texture_ex(
-            &target_3.texture,
-            self.rect.x + 5.0,
-            self.rect.y + 5.0 + self.theme.title_thickness,
-            WHITE,
-            DrawTextureParams {
-                ..Default::default()
-            },
+    pub fn start_widget_render(&self) {
+        let scale = 0.01;
+        
+        let title_thickness = match self.info.show_titlebar {
+            false => 0.0,
+            _ => 30.0,
+        };
+        let (zoom_x, zoom_y) = (
+            scale / self.rect.w * 200.0,
+            scale / (self.rect.h - title_thickness) * 200.0,
         );
+        
+        let cam_1 = &Camera2D {
+            zoom: vec2(zoom_x, zoom_y),
+            target: vec2(1.0 / zoom_x, 1.0 / zoom_y),
+            render_target: Some(self.render_targets.target_1.clone().unwrap()),
+            ..Default::default()
+        };
+        let cam_2 = &Camera2D {
+            zoom: vec2(zoom_x, zoom_y),
+            target: vec2(1.0 / zoom_x, 1.0 / zoom_y),
+            render_target: Some(self.render_targets.target_2.clone().unwrap()),
+            ..Default::default()
+        };
+        let cam_3 = &Camera2D {
+            zoom: vec2(
+                scale / screen_width() * 200.0,
+                scale / screen_height() * 200.0,
+            ),
+            target: vec2(
+                1.0 / scale * screen_width() / 200.0,
+                1.0 / scale * screen_height() / 200.0,
+            ),
+            render_target: Some(self.render_targets.target_3.clone().unwrap()),
+            ..Default::default()
+        };
+
+        set_camera(cam_3);
+        clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
+
+        set_camera(cam_2);
+        clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
+
+        set_camera(cam_1);
+        clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
+
+        // DRAW TOP-LAYER OF WIDGETS
+        let new_rect = self.rect.clone();
+        let mut vertical_offset = 0.0;
+
+        for i in self.holder_ids.iter() {
+            set_camera(cam_1);
+            let holder = self.widget_holders.get(i).unwrap();
+
+            let rect_h = holder.render(
+                &new_rect,
+                self.scroll_y,
+                &self.theme.font,
+                vertical_offset,
+                [&cam_1, &cam_2, &cam_3],
+            );
+            
+            vertical_offset += rect_h;
+        }
+        
+        set_default_camera();
+
+        if let Some(target) = &self.render_targets.target_1 {
+            draw_texture_ex(
+                &target.texture,
+                self.rect.x + 5.0,
+                self.rect.y + 5.0 + title_thickness,
+                WHITE,
+                DrawTextureParams {
+                    source: Some(Rect::new(
+                        0.0,
+                        0.0,
+                        (self.rect.w - 5.0).max(0.0),
+                        (self.rect.h - 5.0 - title_thickness).max(0.0),
+                    )),
+                    ..Default::default()
+                },
+            )
+        }
+
+        if let Some(target) = &self.render_targets.target_2 {
+            draw_texture_ex(
+                &target.texture,
+                self.rect.x + 5.0,
+                self.rect.y + 5.0 + title_thickness,
+                WHITE,
+                DrawTextureParams {
+                    source: Some(Rect::new(
+                        0.0,
+                        0.0,
+                        (self.rect.w - 5.0).max(0.0),
+                        (self.rect.h - 5.0 - title_thickness).max(0.0),
+                    )),
+                    ..Default::default()
+                },
+            )
+        }
     }
 
     pub fn draw_titlebar(&self) {
@@ -350,22 +457,35 @@ impl Window {
             mouse_action.taken = true;
             scroll_hov = true;
         }
-
+        
+        let (mut widget_action, mut holder_rect) = (WidgetAction::new(), Rect::default());
+        let mut vertical_offset = 0.0;
+        
         if window_action {
-            let (widget_action, holder_rect) = self.widget_holder.update(
-                &self.rect,
-                self.info.show_titlebar,
-                hover,
-                self.mouse,
-                self.scroll_y,
-                &self.theme.font,
-                &mut mouse_action,
-            );
-            if widget_action.taken && !scroll_hov {
-                self.taken = true;
-            } else {
-                self.handle_scrolling(&holder_rect);
+            let new_rect = self.rect.clone();
+            
+            for i in self.holder_ids.iter() {
+                let holder = self.widget_holders.get_mut(i).unwrap();
+
+                (widget_action, holder_rect) = holder.update(
+                    &new_rect,
+                    vertical_offset,
+                    self.info.show_titlebar,
+                    hover,
+                    self.mouse,
+                    self.scroll_y,
+                    &self.theme.font,
+                    &mut mouse_action,
+                );
+                
+                vertical_offset += holder_rect.h;
             }
+        }
+        
+        if widget_action.taken && !scroll_hov {
+            self.taken = true;
+        } else {
+            self.handle_scrolling(vertical_offset);
         }
 
         if self.info.resizable {
@@ -391,13 +511,10 @@ impl Window {
             self.clamp();
         }
 
-        self.widget_holder.ensure_render_targets(
-            &self.rect,
-            match self.info.show_titlebar {
-                false => 0.0,
-                _ => self.theme.title_thickness,
-            },
-        );
+        self.ensure_render_targets(match self.info.show_titlebar {
+            false => 0.0,
+            _ => self.theme.title_thickness,
+        });
     }
 
     fn handle_dragging(&mut self) {
@@ -519,14 +636,14 @@ impl Window {
         self.resizing = self.resize_handles.resizing.is_some();
     }
 
-    fn handle_scrolling(&mut self, holder_rect: &Rect) {
+    fn handle_scrolling(&mut self, vertical_offset: f32) {
         let wheel = mouse_wheel();
         if wheel.1 != 0.0 {
             self.scroll_y -= wheel.1;
         } else if wheel.0 != 0.0 {
             self.scroll_y += wheel.0;
         }
-        self.max_scroll_y = (holder_rect.h - self.rect.h + self.theme.title_thickness).max(0.0);
+        self.max_scroll_y = (vertical_offset - self.rect.h + self.theme.title_thickness).max(0.0);
 
         //////////////////////////////////////////
         // SCROLL BAR
@@ -583,21 +700,52 @@ impl Window {
 
         self.scroll_y = self.scroll_y.clamp(0.0, self.max_scroll_y);
     }
+
+    pub fn ensure_render_targets(&mut self, title_thickness: f32) {
+        let sw = self.rect.w as u32;
+        let sh = (self.rect.h - title_thickness) as u32;
+
+        // Check if screen size changed
+        let needs_update = self
+            .render_targets
+            .target_1
+            .as_ref()
+            .map(|t| t.texture.width() as u32 != sw || t.texture.height() as u32 != sh)
+            .unwrap_or(true);
+
+        if needs_update {
+            // ALL targets are screen-sized now
+            self.render_targets.target_1 = Some(render_target(sw, sh));
+            self.render_targets.target_2 = Some(render_target(sw, sh));
+            self.render_targets.target_3 = Some(render_target(sw, sh));
+
+            self.render_targets
+                .target_1
+                .as_ref()
+                .unwrap()
+                .texture
+                .set_filter(FilterMode::Nearest);
+            self.render_targets
+                .target_2
+                .as_ref()
+                .unwrap()
+                .texture
+                .set_filter(FilterMode::Nearest);
+            self.render_targets
+                .target_3
+                .as_ref()
+                .unwrap()
+                .texture
+                .set_filter(FilterMode::Nearest);
+        }
+    }
 }
 
 /////////////////////////////////////
-// WIDGET
+// SCOPES
 /////////////////////////////////////
 
 impl Window {
-    pub fn begin_widgets(&mut self) {
-        self.widget_holder.reset();
-    }
-
-    pub fn end_widgets(&mut self) {
-        self.widget_holder.retain();
-    }
-
     pub fn scope(&mut self, mut f: impl FnMut(&mut Window)) -> &mut Window {
         f(self);
         self
@@ -629,11 +777,148 @@ impl Window {
         }
         self
     }
+}
+
+/////////////////////////////////////
+// SAME LINE
+/////////////////////////////////////
+
+impl Window {
+    // Helper to get or insert a WidgetHolder
+    fn get_or_insert_holder(
+        &mut self,
+        id: impl Into<WidgetId>,
+        same_line: bool,
+    ) -> &mut WidgetHolder {
+        let id_string = id.into().to_string();
+        self.holder_ids.insert(id_string.clone()); // Ensure order
+        self.widget_holders
+            .entry(id_string)
+            .or_insert_with(|| WidgetHolder::new(same_line))
+    }
+
+    pub fn same_line(
+        &mut self,
+        id: impl Into<WidgetId>,
+        mut f: impl FnMut(&mut Window),
+    ) -> &mut Window {
+        let same_line_holder = self.get_or_insert_holder(id.into(), true);
+        same_line_holder.same_line = true; // Ensure it's marked as same_line
+
+        f(self);
+
+        let next_holder_id = self.generate_widget_id("next_line");
+        self.get_or_insert_holder(next_holder_id, false);
+        self
+    }
+
+    pub async fn same_line_async(
+        &mut self,
+        id: impl Into<WidgetId>,
+        mut f: impl AsyncFnMut(&mut Window),
+    ) -> &mut Window {
+        let same_line_holder = self.get_or_insert_holder(id.into(), true);
+        same_line_holder.same_line = true;
+
+        f(self).await;
+
+        let next_holder_id = self.generate_widget_id("next_line_async");
+        self.get_or_insert_holder(next_holder_id, false);
+        self
+    }
+
+    pub fn same_line_if(
+        &mut self,
+        id: impl Into<WidgetId>,
+        condition: impl Into<bool>,
+        mut f: impl FnMut(&mut Window),
+    ) -> &mut Window {
+        let same_line_holder = self.get_or_insert_holder(id.into(), true);
+        same_line_holder.same_line = true;
+
+        if condition.into() {
+            f(self)
+        }
+
+        let next_holder_id = self.generate_widget_id("next_line_if");
+        self.get_or_insert_holder(next_holder_id, false);
+        self
+    }
+
+    pub async fn same_line_async_if(
+        &mut self,
+        id: impl Into<WidgetId>,
+        condition: impl Into<bool>,
+        mut f: impl AsyncFnMut(&mut Window),
+    ) -> &mut Window {
+        let same_line_holder = self.get_or_insert_holder(id.into(), true);
+        same_line_holder.same_line = true;
+
+        if condition.into() {
+            f(self).await;
+        }
+
+        let next_holder_id = self.generate_widget_id("next_line_async_if");
+        self.get_or_insert_holder(next_holder_id, false);
+        self
+    }
+}
+
+/////////////////////////////////////
+// WIDGET
+/////////////////////////////////////
+
+impl Window {
+    pub fn begin_widgets(&mut self) {
+        // Clear all holder_ids except the main one
+        self.holder_ids.clear();
+        self.holder_ids.insert(String::from("__Main__"));
+
+        // Reset all existing widget holders
+        for (_, holder) in self.widget_holders.iter_mut() {
+            holder.reset();
+        }
+    }
+
+    pub fn end_widgets(&mut self) {
+        // Retain only the widget holders that were used in this frame
+        self.widget_holders
+            .retain(|k, _| self.holder_ids.contains(k));
+
+        // Call retain() on the remaining holders
+        for (_, holder) in self.widget_holders.iter_mut() {
+            holder.retain();
+        }
+    }
+
+    // GET LAST WIDGET HOLDER
+
+    fn last_widget_holder(&mut self) -> &mut WidgetHolder {
+        // If holder_ids is empty (shouldn't happen after begin_widgets, but defensive)
+        if self.holder_ids.is_empty() {
+            let main_id = String::from("__Main__");
+            self.holder_ids.insert(main_id.clone());
+            self.widget_holders
+                .entry(main_id.clone())
+                .or_insert_with(|| WidgetHolder::new(false));
+        }
+        let last_id = self.holder_ids.last().unwrap().clone(); // Clone to satisfy the borrow-checker
+        self.widget_holders.get_mut(&last_id).unwrap()
+    }
+
+    // Helper to generate a unique WidgetId string for auto-IDs
+    fn generate_widget_id(&self, prefix: &str) -> String {
+        let mut hasher = DefaultHasher::new();
+        prefix.hash(&mut hasher);
+        self.holder_ids.len().hash(&mut hasher); // Use current number of holders for uniqueness
+        format!("{}_{}", prefix, hasher.finish())
+    }
 
     // WIDGET TYPES
 
     pub fn text(&mut self, label: impl ToString) -> &mut Text {
-        self.widget_holder.text(().into(), label.to_string())
+        let id = self.generate_widget_id("text");
+        self.last_widget_holder().text(id.into(), label.to_string())
     }
 
     pub fn text_ex(
@@ -643,12 +928,14 @@ impl Window {
         font_size: u16,
         font: Option<Font>,
     ) -> &mut TextEx {
-        self.widget_holder
-            .text_ex(().into(), label.to_string(), color, font_size, font)
+        let id = self.generate_widget_id("text_ex");
+        self.last_widget_holder()
+            .text_ex(id.into(), label.to_string(), color, font_size, font)
     }
 
     pub fn button(&mut self, id: impl Into<WidgetId>, label: impl ToString) -> &mut Button {
-        self.widget_holder.button(id.into(), label.to_string())
+        self.last_widget_holder()
+            .button(id.into(), label.to_string())
     }
 
     pub fn checkbox(
@@ -657,7 +944,7 @@ impl Window {
         label: impl ToString,
         default_value: bool,
     ) -> &mut Checkbox {
-        self.widget_holder
+        self.last_widget_holder()
             .checkbox(id.into(), label.to_string(), default_value)
     }
 
@@ -667,7 +954,7 @@ impl Window {
         path: impl ToString,
         size: Option<Vec2>,
     ) -> &mut ImageWidget {
-        self.widget_holder
+        self.last_widget_holder()
             .image(id.into(), path.to_string(), size)
             .await
     }
@@ -678,7 +965,7 @@ impl Window {
         label: impl ToString,
         slider_info: SliderInfo,
     ) -> &mut Slider {
-        self.widget_holder
+        self.last_widget_holder()
             .slider(id.into(), label.to_string(), slider_info)
     }
 
@@ -688,7 +975,7 @@ impl Window {
         label: impl ToString,
         progress_info: ProgressInfo,
     ) -> &mut ProgressBar {
-        self.widget_holder
+        self.last_widget_holder()
             .progress_bar(id.into(), label.to_string(), progress_info)
     }
 
@@ -705,12 +992,12 @@ impl Window {
             println!("{stringed_value} not found in items [Dropdown].")
         }
 
-        self.widget_holder
+        self.last_widget_holder()
             .dropdown(id.into(), stringed_items, stringed_value)
     }
 
     pub fn separator(&mut self) -> &mut Separator {
-        self.widget_holder.separator(WidgetId::Auto)
+        self.last_widget_holder().separator(WidgetId::Auto)
     }
 
     pub fn tabs(
@@ -719,18 +1006,32 @@ impl Window {
         tabs: Vec<impl ToString>,
         default_tab: usize,
     ) -> &mut TabHolder {
-        self.widget_holder.tabs(
+        self.last_widget_holder().tabs(
             id.into(),
             tabs.iter().map(|x| x.to_string()).collect(),
             default_tab,
         )
     }
-    
-    pub fn textbox(&mut self, id: impl Into<WidgetId>, default_text: impl ToString) -> &mut TextBox {
-        self.widget_holder.textbox(id.into(), default_text.to_string())
+
+    pub fn textbox(
+        &mut self,
+        id: impl Into<WidgetId>,
+        default_text: impl ToString,
+    ) -> &mut TextBox {
+        self.last_widget_holder()
+            .textbox(id.into(), default_text.to_string())
     }
-    
-    pub fn labeled_textbox(&mut self, id: impl Into<WidgetId>, label: impl ToString, default_text: impl ToString) -> &mut TextBox {
-        self.widget_holder.labeled_textbox(id.into(), label.to_string(), default_text.to_string())
+
+    pub fn labeled_textbox(
+        &mut self,
+        id: impl Into<WidgetId>,
+        label: impl ToString,
+        default_text: impl ToString,
+    ) -> &mut TextBox {
+        self.last_widget_holder().labeled_textbox(
+            id.into(),
+            label.to_string(),
+            default_text.to_string(),
+        )
     }
 }

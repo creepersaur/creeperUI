@@ -42,6 +42,16 @@ impl Widget for Checkbox {
             1.0,
         );
         
+        let char_dim = measure_text(
+            "A",
+            match &info.font {
+                Some(f) => Some(&f),
+                _ => None,
+            },
+            14,
+            1.0,
+        );
+        
         let vertical_height = match info.same_line {
             true => 0.0,
             _ => info.rect.h
@@ -70,8 +80,8 @@ impl Widget for Checkbox {
         draw_rectangle(
             info.rect.x,
             info.rect.y + vertical_height,
-            text_dim.height + 5.0,
-            text_dim.height + 5.0,
+            char_dim.height + 5.0,
+            char_dim.height + 5.0,
             match (self.hovered, self.pressed) {
                 (true, false) => Color::new(0.2, 0.4, 0.6, 1.0),
                 (_, true) => Color::new(0.3, 0.5, 0.75, 1.0),
@@ -83,8 +93,8 @@ impl Widget for Checkbox {
             draw_rectangle_lines(
                 info.rect.x,
                 info.rect.y + vertical_height,
-                text_dim.height + 5.0,
-                text_dim.height + 5.0,
+                char_dim.height + 5.0,
+                char_dim.height + 5.0,
                 2.0,
                 WHITE,
             );
@@ -94,8 +104,8 @@ impl Widget for Checkbox {
             draw_rectangle(
                 info.rect.x + 1.0,
                 info.rect.y + vertical_height + 1.0,
-                text_dim.height + 3.0,
-                text_dim.height + 3.0,
+                char_dim.height + 3.0,
+                char_dim.height + 3.0,
                 Color::new(0.3, 0.7, 1.0, 1.0),
             );
 
@@ -103,15 +113,15 @@ impl Widget for Checkbox {
                 info.rect.x + 4.0,
                 info.rect.y + vertical_height + 8.0,
                 info.rect.x + 6.0,
-                info.rect.y + text_dim.height + vertical_height + 3.0,
+                info.rect.y + char_dim.height + vertical_height + 3.0,
                 3.0,
                 WHITE,
             );
 
             draw_line(
                 info.rect.x + 6.0,
-                info.rect.y + text_dim.height + vertical_height + 3.0,
-                info.rect.x + text_dim.height + 2.0,
+                info.rect.y + char_dim.height + vertical_height + 3.0,
+                info.rect.x + char_dim.height + 2.0,
                 info.rect.y + vertical_height + 2.0,
                 3.0,
                 WHITE,
@@ -119,14 +129,28 @@ impl Widget for Checkbox {
         }
 
         Some(vec2(
-            text_dim.width + 10.0 + text_dim.height,
-            text_dim.height + 5.0,
+            text_dim.width + 10.0 + char_dim.height,
+            char_dim.height + 10.0,
         ))
     }
 
     fn update(&mut self, info: &mut UpdateInfo) -> Option<Vec2> {
-        let text_dim = measure_text(
+        let mut text_dim = measure_text(
             &self.text.to_string(),
+            match &info.font {
+                Some(f) => Some(&f),
+                _ => None,
+            },
+            14,
+            1.0,
+        );
+        
+        if self.text.len() > 0 {
+            text_dim.width += 5.0;
+        }
+        
+        let char_dim = measure_text(
+            "A",
             match &info.font {
                 Some(f) => Some(&f),
                 _ => None,
@@ -141,10 +165,10 @@ impl Widget for Checkbox {
         };
         
         let rect = Rect::new(
-            info.rect.x + text_dim.height + 7.0,
+            info.rect.x,
             info.rect.y + vertical_height,
-            text_dim.width + text_dim.height + 10.0,
-            text_dim.height + 10.0,
+            text_dim.width + char_dim.height + 3.0,
+            char_dim.height + 10.0,
         );
 
         if rect.contains(info.mouse) && info.hover && !info.mouse_action.taken {
@@ -169,8 +193,8 @@ impl Widget for Checkbox {
         }
 
         Some(vec2(
-            text_dim.width + text_dim.height + 10.0,
-            text_dim.height + 5.0,
+            text_dim.width + char_dim.height + 10.0,
+            char_dim.height + 10.0,
         ))
     }
 }

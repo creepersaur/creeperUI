@@ -27,16 +27,19 @@ pub struct UpdateInfo<'a> {
     pub same_line: bool,
 }
 
+#[derive(Clone, Default)]
+pub struct GlobalRenderTargets {
+	pub target_1: Option<RenderTarget>,
+	pub target_2: Option<RenderTarget>,
+	pub target_3: Option<RenderTarget>,
+}
+
 pub type WidgetIdNum = u64;
 
 pub struct WidgetHolder {
     pub same_line: bool,
     pub(crate) widgets: HashMap<WidgetIdNum, Box<dyn Widget>>,
-    pub(crate) frame_ids: IndexSet<WidgetIdNum>,
-
-    target_1: Option<RenderTarget>,
-    target_2: Option<RenderTarget>,
-    target_3: Option<RenderTarget>,
+    pub(crate) frame_ids: IndexSet<WidgetIdNum>
 }
 
 impl WidgetHolder {
@@ -45,10 +48,6 @@ impl WidgetHolder {
             same_line,
             widgets: HashMap::new(),
             frame_ids: IndexSet::new(),
-
-            target_1: None,
-            target_2: None,
-            target_3: None,
         }
     }
 
@@ -59,114 +58,22 @@ impl WidgetHolder {
     pub fn retain(&mut self) {
         self.widgets.retain(|k, _| self.frame_ids.contains(k));
     }
-
-    pub fn ensure_render_targets(&mut self, rect: &Rect, title_thickness: f32) {
-        let w = rect.w as u32;
-        let h = (rect.h - title_thickness) as u32;
-
-        if self
-            .target_1
-            .as_ref()
-            .map(|t| t.texture.width() as u32 != w)
-            .unwrap_or(true)
-            || self
-                .target_1
-                .as_ref()
-                .map(|t| t.texture.height() as u32 != h)
-                .unwrap_or(true)
-        {
-            self.target_1 = Some(render_target(w, h));
-            self.target_2 = Some(render_target(w, h));
-        }
-
-        let sw = screen_width() as u32;
-        let sh = screen_height() as u32;
-        if self
-            .target_3
-            .as_ref()
-            .map(|t| t.texture.width() as u32 != sw)
-            .unwrap_or(true)
-            || self
-                .target_3
-                .as_ref()
-                .map(|t| t.texture.height() as u32 != sh)
-                .unwrap_or(true)
-        {
-            self.target_3 = Some(render_target(sw, sh));
-        }
-
-        self.target_1
-            .clone()
-            .unwrap()
-            .texture
-            .set_filter(FilterMode::Nearest);
-        self.target_2
-            .clone()
-            .unwrap()
-            .texture
-            .set_filter(FilterMode::Nearest);
-        self.target_3
-            .clone()
-            .unwrap()
-            .texture
-            .set_filter(FilterMode::Nearest);
-    }
-
-    pub fn render(
+    
+    pub fn render<'a>(
         &self,
         rect: &Rect,
-        show_titlebar: bool,
         scroll_y: f32,
         font: &Option<Font>,
-    ) -> &RenderTarget {
-        let scale = 0.01;
-
-        let title_thickness = match show_titlebar {
-            false => 0.0,
-            _ => 30.0,
-        };
-        let (zoom_x, zoom_y) = (
-            scale / rect.w * 200.0,
-            scale / (rect.h - title_thickness) * 200.0,
-        );
-
-        let target_1 = self.target_1.as_ref().unwrap();
-        let target_2 = self.target_2.as_ref().unwrap();
-        let target_3 = self.target_3.as_ref().unwrap();
-
-        let mut holder_rect = Rect::new(0.0, -scroll_y, 0.0, 0.0);
-        let cam_1 = &Camera2D {
-            zoom: vec2(zoom_x, zoom_y),
-            target: vec2(1.0 / zoom_x, 1.0 / zoom_y),
-            render_target: Some(target_1.clone()),
-            ..Default::default()
-        };
-        let cam_2 = &Camera2D {
-            zoom: vec2(zoom_x, zoom_y),
-            target: vec2(1.0 / zoom_x, 1.0 / zoom_y),
-            render_target: Some(target_2.clone()),
-            ..Default::default()
-        };
-        let cam_3 = &Camera2D {
-            zoom: vec2(
-                scale / screen_width() * 200.0,
-                scale / screen_height() * 200.0,
-            ),
-            target: vec2(
-                1.0 / scale * screen_width() / 200.0,
-                1.0 / scale * screen_height() / 200.0,
-            ),
-            render_target: Some(target_3.clone()),
-            ..Default::default()
-        };
-
-        set_camera(cam_3);
-        clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
-
-        set_camera(cam_1);
-        clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
-
+        vertical_offset: f32,
+        cameras: [&Camera2D; 3],
+    ) -> f32 {
+        let [cam_1, cam_2, cam_3] = cameras;
+        
+        let mut holder_rect = Rect::new(0.0, -scroll_y + vertical_offset, 0.0, 0.0);
+        
         for i in self.frame_ids.iter() {
+            set_camera(cam_1);
+            
             let mut info = RenderInfo {
                 rect: holder_rect,
                 win_rect: *rect,
@@ -176,9 +83,9 @@ impl WidgetHolder {
                 cam_2,
                 cam_3,
             };
-
+            
             let widget_size = self.widgets.get(i).unwrap().render(&mut info);
-
+            
             if let Some(size) = widget_size {
                 if self.same_line {
                     let padding = 5.0;
@@ -195,48 +102,15 @@ impl WidgetHolder {
                     }
                 }
             }
-
-            set_camera(cam_1);
         }
-
-        set_default_camera();
-        draw_texture_ex(
-            &target_1.texture,
-            rect.x + 5.0,
-            rect.y + 5.0 + title_thickness,
-            WHITE,
-            DrawTextureParams {
-                source: Some(Rect::new(
-                    0.0,
-                    0.0,
-                    (rect.w - 5.0).max(0.0),
-                    (rect.h - 5.0 - title_thickness).max(0.0),
-                )),
-                ..Default::default()
-            },
-        );
-        draw_texture_ex(
-            &target_2.texture,
-            rect.x + 5.0,
-            rect.y + 5.0 + title_thickness,
-            WHITE,
-            DrawTextureParams {
-                source: Some(Rect::new(
-                    0.0,
-                    0.0,
-                    (rect.w - 5.0).max(0.0),
-                    (rect.h - 5.0 - title_thickness).max(0.0),
-                )),
-                ..Default::default()
-            },
-        );
-
-        target_3
+        
+        holder_rect.h
     }
 
     pub fn update(
         &mut self,
         rect: &Rect,
+        vertical_offset: f32,
         show_titlebar: bool,
         hover: bool,
         mouse: Vec2,
@@ -250,7 +124,7 @@ impl WidgetHolder {
         };
         let mut holder_rect = Rect::new(
             rect.x + 5.0,
-            rect.y + 5.0 + title_thickness - scroll_y,
+            rect.y + 5.0 + title_thickness - scroll_y + vertical_offset,
             0.0,
             0.0,
         );
@@ -596,7 +470,7 @@ impl WidgetHolder {
     }
 }
 
-fn create_widget_id(
+pub fn create_widget_id(
     widget_type: &str,
     frame_ids: &IndexSet<WidgetIdNum>,
     id: WidgetId,

@@ -1,6 +1,6 @@
 pub mod widget;
 pub mod widget_holder;
-mod widget_id;
+pub mod widget_id;
 mod widget_types;
 
 pub use widget::*;
