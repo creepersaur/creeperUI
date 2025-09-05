@@ -42,8 +42,14 @@ macro_rules! gen_id {
     () => {
         format!("{}:{}:{}", file!(), line!(), column!())
     };
-    ($extra_label: expr) => {
-        format!("{}:{}:{}:{}", $extra_label, file!(), line!(), column!())
+    ($($extra_label:expr),+ $(,)?) => {
+        {
+            let extras = vec![$($extra_label.to_string()),+].join(":");
+            format!("{}:{}:{}:{}",
+                extras,
+                file!(), line!(), column!()
+            )
+        }
     };
 }
 
