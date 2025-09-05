@@ -212,4 +212,22 @@ win.scope_async_if( CONDITION, await |win| {
 }).await;
 ```
 
+---
+
+# Putting widgets in the same line
+
+Call the `win.same_line` method which takes a widget id and a closure. Like scopes, this has
+derivatives such as `same_line_if`, `same_line_async`, and `same_line_async_if`.
+
+```rust
+win.same_line(gen_id!(), |win| {
+    win.text("Theres a button on the right");
+    win.button((), "Click me");
+});
+```
+
+At the end of the closure, the window will switch back to regular vertical widgets.
+
+---
+
 Yeah thats all for now, you can probably understand everything from the source code.
