@@ -28,12 +28,13 @@ impl WindowHandler {
     }
 
     pub fn begin(&mut self, id: impl ToString) -> &mut Window {
-        let win_id = create_window_id(&id.to_string());
+        let name = id.to_string();
+        let win_id = create_window_id(&name);
         self.safe_queue.push(win_id);
 
         if !self.windows.contains_key(&win_id) {
             self.windows
-                .insert(win_id, Window::new(win_id, self.theme.clone()));
+                .insert(win_id, Window::new(win_id, name, self.theme.clone()));
             self.latest_active.insert(0, win_id);
         }
 

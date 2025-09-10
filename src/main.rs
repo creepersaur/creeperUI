@@ -6,22 +6,10 @@ async fn main() {
     let mut ui = UI::new(Some("src/arial.ttf")).await;
 
     loop {
-        ui.begin("1").set_title("login window").scope(|win| {
-            win.same_line((), |win| {
-                win.dropdown((), vec![
-                    "Hello",
-                    "World"
-                ], "Hello");
-                
-                win.text("Camera Type:");
-                
-                win.dropdown((), vec![
-                    "Custom",
-                    "Scriptable",
-                    "Orbit",
-                    "Fixed",
-                ], "Custom");
-            });
+        ui.begin("login window").scope(|win| {
+            if **win.button((), "Hello") {
+                println!("Pressed");
+            }
         });
 
         ui.draw();

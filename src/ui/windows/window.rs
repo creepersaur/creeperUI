@@ -36,12 +36,12 @@ pub struct Window {
 }
 
 impl Window {
-    pub fn new(id: WindowId, theme: WindowTheme) -> Window {
+    pub fn new(id: WindowId, name: String, theme: WindowTheme) -> Window {
         Window {
             theme,
             id,
             taken: false,
-            title: "Window".into(),
+            title: name,
             rect: Rect::new(0.0, 0.0, 200.0, 150.0),
             info: WindowInfo::new(),
             resize_handles: WindowResizeHandles::new(),

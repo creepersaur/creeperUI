@@ -2,7 +2,7 @@ use crate::widgets::widget::Widget;
 use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
 use macroquad::prelude::*;
 use std::any::Any;
-use std::ops::Add;
+use std::ops::{Add, Deref};
 
 pub struct Button {
     pub value: String,
@@ -29,6 +29,14 @@ impl Button {
         self.background = color;
         
         self
+    }
+}
+
+impl Deref for Button {
+    type Target = bool;
+    
+    fn deref(&self) -> &Self::Target {
+        &self.clicked
     }
 }
 
