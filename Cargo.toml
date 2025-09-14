@@ -2,7 +2,7 @@
 name = "creeperUI"
 version = "0.1.9"
 edition = "2021"
-description = "An imgui inspired Immediate mode GUI library for Macroquad."
+description = "An dearimgui inspired Immediate mode GUI library for Macroquad. ( imgui )"
 license = "MIT"
 repository = "https://github.com/creepersaur/creeperUI"
 

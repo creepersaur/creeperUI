@@ -42,7 +42,7 @@ async fn main() {
 To make a window, call `ui.begin` and pass in a **unique** `id` of the window inside the loop. Then call `ui.draw()` before next_frame.
 ```rust
 loop {
-    let win = ui.begin("id");
+    let win = ui.begin("MyWindow"); // "MyWindow" is the id
     
     ui.draw();
     next_frame().await

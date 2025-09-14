@@ -250,7 +250,7 @@ impl Widget for Dropdown {
             text_dim.height + 10.0,
         );
 
-        if rect.contains(info.mouse) && !info.mouse_action.taken {
+        if rect.contains(info.mouse) && info.hover && !info.mouse_action.taken  {
             self.hovered = true;
             if is_mouse_button_pressed(Left) {
                 self.pressed = true;

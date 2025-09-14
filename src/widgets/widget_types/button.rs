@@ -11,6 +11,7 @@ pub struct Button {
     pub clicked: bool,
     
     background: Color,
+    foreground: Color,
 }
 
 impl Button {
@@ -22,12 +23,17 @@ impl Button {
             clicked: false,
             
             background: Color::new(0.1, 0.3, 0.5, 0.9),
+            foreground: WHITE,
         }
     }
     
     pub fn set_background(&mut self, color: Color) -> &mut Self {
         self.background = color;
-        
+        self
+    }
+    
+    pub fn set_foreground(&mut self, color: Color) -> &mut Self {
+        self.foreground = color;
         self
     }
 }
@@ -70,8 +76,8 @@ impl Widget for Button {
             text_dim.width + 10.0,
             text_dim.height + 10.0,
             match (self.hovered, self.pressed) {
-                (true, false) => Color::from_vec(self.background.to_vec().add(vec4(0.1, 0.1, 0.2, 0.0))), // HOVER
-                (_, true) => Color::from_vec(self.background.to_vec().add(vec4(0.2, 0.2, 0.3, 0.1))),     // PRESSED
+                (true, false) => Color::from_vec(self.background.to_vec().add(vec4(0.13, 0.13, 0.13, 0.0))), // HOVER
+                (_, true) => Color::from_vec(self.background.to_vec().add(vec4(0.25, 0.25, 0.25, 0.1))),     // PRESSED
                 _ => self.background,
             },
         );
@@ -98,7 +104,7 @@ impl Widget for Button {
                         _ => None,
                     },
                     font_size: 14,
-                    color: WHITE,
+                    color: self.foreground,
                     ..Default::default()
                 },
             );

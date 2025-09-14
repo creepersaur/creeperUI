@@ -1,4 +1,4 @@
-use creeperUI::{gen_id, ActionType, ProgressInfo, SliderInfo, Window, UI};
+use creeperUI::*;
 use macroquad::prelude::*;
 
 #[macroquad::main("Hello")]
@@ -7,13 +7,13 @@ async fn main() {
 
     loop {
         ui.begin("login window").scope(|win| {
-            if **win.button((), "Hello") {
-                println!("Pressed");
-            }
+            win.same_line((), |win| {
+                win.button((), "hello");
+            });
+            win.button((), "hello");
         });
 
         ui.draw();
-        // println!("Frame Time: {:2}ms", get_frame_time() * 1000.0);
         next_frame().await
     }
 }

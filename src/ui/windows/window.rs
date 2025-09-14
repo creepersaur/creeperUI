@@ -215,9 +215,10 @@ impl Window {
             draw_texture_ex(
                 &target.texture,
                 self.rect.x + 5.0,
-                self.rect.y + 5.0 + self.theme.title_thickness,
+                self.rect.y + self.theme.title_thickness,
                 WHITE,
                 DrawTextureParams {
+                    dest_size: Some(vec2(screen_width(), screen_height())),
                     ..Default::default()
                 },
             );
@@ -286,7 +287,7 @@ impl Window {
                 [&cam_1, &cam_2, &cam_3],
             );
             
-            vertical_offset += rect_h;
+            vertical_offset += rect_h + self.theme.holder_padding;
         }
         
         set_default_camera();
@@ -295,7 +296,7 @@ impl Window {
             draw_texture_ex(
                 &target.texture,
                 self.rect.x + 5.0,
-                self.rect.y + 5.0 + title_thickness,
+                self.rect.y + title_thickness,
                 WHITE,
                 DrawTextureParams {
                     source: Some(Rect::new(
@@ -313,7 +314,7 @@ impl Window {
             draw_texture_ex(
                 &target.texture,
                 self.rect.x + 5.0,
-                self.rect.y + 5.0 + title_thickness,
+                self.rect.y + title_thickness,
                 WHITE,
                 DrawTextureParams {
                     source: Some(Rect::new(
@@ -458,8 +459,8 @@ impl Window {
             scroll_hov = true;
         }
         
-        let (mut widget_action, mut holder_rect) = (WidgetAction::new(), Rect::default());
-        let mut vertical_offset = 0.0;
+        let mut widget_action = WidgetAction::new();
+        let mut vertical_offset = -self.theme.holder_padding;
         
         if window_action {
             let new_rect = self.rect.clone();
@@ -467,7 +468,7 @@ impl Window {
             for i in self.holder_ids.iter() {
                 let holder = self.widget_holders.get_mut(i).unwrap();
 
-                (widget_action, holder_rect) = holder.update(
+                let (action, holder_rect) = holder.update(
                     &new_rect,
                     vertical_offset,
                     self.info.show_titlebar,
@@ -478,7 +479,8 @@ impl Window {
                     &mut mouse_action,
                 );
                 
-                vertical_offset += holder_rect.h;
+                widget_action = action;
+                vertical_offset += holder_rect.h + self.theme.holder_padding;
             }
         }
         
@@ -510,6 +512,9 @@ impl Window {
         } else if self.resizing {
             self.clamp();
         }
+        
+        self.rect.x = self.rect.x.floor();
+        self.rect.y = self.rect.y.floor();
 
         self.ensure_render_targets(match self.info.show_titlebar {
             false => 0.0,
@@ -702,22 +707,25 @@ impl Window {
     }
 
     pub fn ensure_render_targets(&mut self, title_thickness: f32) {
-        let sw = self.rect.w as u32;
-        let sh = (self.rect.h - title_thickness) as u32;
+        let win_w = self.rect.w as u32;
+        let win_h = (self.rect.h - title_thickness) as u32;
+        let (screen_w, screen_h) = (screen_width() as u32, screen_height() as u32);
 
         // Check if screen size changed
         let needs_update = self
             .render_targets
             .target_1
             .as_ref()
-            .map(|t| t.texture.width() as u32 != sw || t.texture.height() as u32 != sh)
+            .map(|t| t.texture.width() as u32 != win_w || t.texture.height() as u32 != win_h)
+            .unwrap_or(true);
+        
+        let update_3 = self.render_targets.target_3.as_ref()
+            .map(|t| t.texture.width() as u32 != screen_w || t.texture.height() as u32 != screen_h)
             .unwrap_or(true);
 
         if needs_update {
-            // ALL targets are screen-sized now
-            self.render_targets.target_1 = Some(render_target(sw, sh));
-            self.render_targets.target_2 = Some(render_target(sw, sh));
-            self.render_targets.target_3 = Some(render_target(sw, sh));
+            self.render_targets.target_1 = Some(render_target(win_w, win_h));
+            self.render_targets.target_2 = Some(render_target(win_w, win_h));
 
             self.render_targets
                 .target_1
@@ -731,6 +739,10 @@ impl Window {
                 .unwrap()
                 .texture
                 .set_filter(FilterMode::Nearest);
+        }
+        
+        if update_3 {
+            self.render_targets.target_3 = Some(render_target(screen_w, screen_h));
             self.render_targets
                 .target_3
                 .as_ref()
