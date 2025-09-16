@@ -10,6 +10,7 @@ use macroquad::input::MouseButton::Left;
 use macroquad::prelude::*;
 use std::collections::HashMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
+use crate::misc::rounded_rect::{draw_rounded_rect, draw_rounded_rect_ex, draw_rounded_rect_stroke};
 
 pub struct Window {
     pub id: WindowId,
@@ -176,11 +177,26 @@ impl Window {
 impl Window {
     pub fn render(&self) {
         // BASE
-        draw_rectangle(
+        // draw_rectangle(
+        //     self.rect.x,
+        //     self.rect.y,
+        //     self.rect.w,
+        //     self.rect.h,
+        //     self.theme.background,
+        // );
+        
+        draw_rounded_rect_stroke(
             self.rect.x,
             self.rect.y,
             self.rect.w,
             self.rect.h,
+            self.theme.border_radius,
+            1.0,
+            match (self.active, self.hover) {
+                (false, true) => self.theme.hover_stroke,
+                (true, _) => self.theme.active_stroke,
+                _ => self.theme.win_stroke,
+            },
             self.theme.background,
         );
 
@@ -196,20 +212,6 @@ impl Window {
         if !self.info.scroll_hovered && !self.info.scroll_pressed.is_some() {
             self.draw_resize_handles();
         }
-
-        // OUTLINE
-        draw_rectangle_lines(
-            self.rect.x,
-            self.rect.y,
-            self.rect.w,
-            self.rect.h,
-            2.0,
-            match (self.active, self.hover) {
-                (false, true) => self.theme.hover_stroke,
-                (true, _) => self.theme.active_stroke,
-                _ => self.theme.win_stroke,
-            },
-        );
         
         if let Some(target) = &self.render_targets.target_3 {
             draw_texture_ex(
@@ -330,11 +332,15 @@ impl Window {
     }
 
     pub fn draw_titlebar(&self) {
-        draw_rectangle(
-            self.rect.x,
-            self.rect.y,
-            self.rect.w,
-            self.theme.title_thickness,
+        draw_rounded_rect_ex(
+            self.rect.x + 1.0,
+            self.rect.y + 1.0,
+            self.rect.w - 2.0,
+            self.theme.title_thickness - 1.0,
+            self.theme.border_radius,
+            self.theme.border_radius,
+            0.0,
+            0.0,
             match self.active {
                 true => self.theme.active_titlebar,
                 _ => self.theme.inactive_titlebar,
@@ -361,11 +367,15 @@ impl Window {
     }
 
     pub fn draw_close_button(&self) {
-        draw_rectangle(
+        draw_rounded_rect_ex(
             self.rect.x + self.rect.w - self.theme.title_thickness,
-            self.rect.y,
-            self.theme.title_thickness,
-            self.theme.title_thickness,
+            self.rect.y + 1.0,
+            self.theme.title_thickness - 1.0,
+            self.theme.title_thickness - 1.0,
+            0.0,
+            self.theme.border_radius,
+            0.0,
+            0.0,
             self.info.close_color,
         );
 
@@ -543,8 +553,8 @@ impl Window {
     pub fn clamp(&mut self) {
         // CLAMP SIZE
 
-        if self.rect.h < self.theme.title_thickness {
-            self.rect.h = self.theme.title_thickness;
+        if self.rect.h < self.theme.title_thickness + self.theme.border_radius / 2.0 - 1.0 {
+            self.rect.h = self.theme.title_thickness + self.theme.border_radius / 2.0 - 1.0;
         }
 
         let title_dim = measure_text(

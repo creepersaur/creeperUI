@@ -2,6 +2,7 @@
 
 pub mod ui;
 pub mod widgets;
+mod misc;
 
 pub use ui::ui::UI;
 pub use ui::windows::action_type::ActionType;
