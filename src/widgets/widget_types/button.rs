@@ -3,6 +3,7 @@ use crate::widgets::widget_holder::{RenderInfo, UpdateInfo};
 use macroquad::prelude::*;
 use std::any::Any;
 use std::ops::{Add, Deref};
+use crate::misc::rounded_rect::{draw_rounded_rect, draw_rounded_rect_stroke};
 
 pub struct Button {
     pub value: String,
@@ -22,7 +23,7 @@ impl Button {
             pressed: false,
             clicked: false,
             
-            background: Color::new(0.1, 0.3, 0.5, 0.9),
+            background: Color::new(0.09, 0.25, 0.45, 1.0),
             foreground: WHITE,
         }
     }
@@ -70,26 +71,33 @@ impl Widget for Button {
             _ => info.rect.h
         };
 
-        draw_rectangle(
-            info.rect.x,
-            info.rect.y + vertical_height,
-            text_dim.width + 10.0,
-            text_dim.height + 10.0,
-            match (self.hovered, self.pressed) {
-                (true, false) => Color::from_vec(self.background.to_vec().add(vec4(0.13, 0.13, 0.13, 0.0))), // HOVER
-                (_, true) => Color::from_vec(self.background.to_vec().add(vec4(0.25, 0.25, 0.25, 0.1))),     // PRESSED
-                _ => self.background,
-            },
-        );
-
         if self.pressed {
-            draw_rectangle_lines(
+            draw_rounded_rect_stroke(
                 info.rect.x,
                 info.rect.y + vertical_height,
                 text_dim.width + 10.0,
                 text_dim.height + 10.0,
-                2.0,
-                Color::new(1.0, 1.0, 1.0, 0.7),
+                3.0,
+                1.0,
+                Color::new(1.0, 1.0, 1.0, 1.0),
+                match (self.hovered, self.pressed) {
+                    (true, false) => Color::from_vec(self.background.to_vec().add(vec4(0.13, 0.13, 0.13, 0.0))), // HOVER
+                    (_, true) => Color::from_vec(self.background.to_vec().add(vec4(0.25, 0.25, 0.25, 0.1))),     // PRESSED
+                    _ => self.background,
+                },
+            );
+        } else {
+            draw_rounded_rect(
+                info.rect.x,
+                info.rect.y + vertical_height,
+                text_dim.width + 10.0,
+                text_dim.height + 10.0,
+                3.0,
+                match (self.hovered, self.pressed) {
+                    (true, false) => Color::from_vec(self.background.to_vec().add(vec4(0.13, 0.13, 0.13, 0.0))), // HOVER
+                    (_, true) => Color::from_vec(self.background.to_vec().add(vec4(0.25, 0.25, 0.25, 0.1))),     // PRESSED
+                    _ => self.background,
+                },
             );
         }
 

@@ -42,7 +42,7 @@ impl WindowTheme {
             win_stroke: Color::new(0.3,0.3,0.3,1.0),
             active_stroke: Color::new(0.55,0.55,0.55,1.0),
             hover_stroke: Color::new(0.4,0.4,0.4,1.0),
-            close_button: Color::new(0.14, 0.28, 0.49, 1.0),
+            close_button: Color::new(0.1, 0.3, 0.5, 1.0),
             close_button_hover: RED,
             close_button_press: Color::new(0.7, 0.1, 0.1, 1.0),
             resize_handle: Color::new(0.3, 0.5, 0.7, 1.0),
