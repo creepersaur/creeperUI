@@ -10,7 +10,7 @@ use macroquad::input::MouseButton::Left;
 use macroquad::prelude::*;
 use std::collections::HashMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
-use crate::misc::rounded_rect::{draw_rounded_rect, draw_rounded_rect_ex, draw_rounded_rect_stroke};
+use crate::misc::rounded_rect::{draw_rounded_rect_ex, draw_rounded_rect_stroke};
 
 pub struct Window {
     pub id: WindowId,

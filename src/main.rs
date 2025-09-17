@@ -9,8 +9,9 @@ async fn main() {
         ui.begin("login window").scope(|win| {
             win.same_line((), |win| {
                 win.button((), "hello");
+                win.textbox((), "hello");
+                win.button((), "hello");
             });
-            win.button((), "hello");
         });
 
         ui.draw();
