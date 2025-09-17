@@ -337,8 +337,8 @@ impl Window {
             self.rect.y + 1.0,
             self.rect.w - 2.0,
             self.theme.title_thickness - 1.0,
-            self.theme.border_radius,
-            self.theme.border_radius,
+            self.theme.border_radius - 1.0,
+            self.theme.border_radius - 1.0,
             0.0,
             0.0,
             match self.active {
@@ -373,7 +373,7 @@ impl Window {
             self.theme.title_thickness - 1.0,
             self.theme.title_thickness - 1.0,
             0.0,
-            self.theme.border_radius,
+            self.theme.border_radius - 1.0,
             0.0,
             0.0,
             self.info.close_color,
@@ -659,6 +659,7 @@ impl Window {
             self.scroll_y += wheel.0;
         }
         self.max_scroll_y = (vertical_offset - self.rect.h + self.theme.title_thickness).max(0.0);
+        self.scroll_y = self.scroll_y.clamp(0.0, self.max_scroll_y);
 
         //////////////////////////////////////////
         // SCROLL BAR
