@@ -19,7 +19,9 @@ pub struct TextBox {
     pub editing: bool,
     hovered: bool,
     pressed: bool,
+    dragging: Option<usize>,
     text_hover: Option<usize>,
+    clipboard_queue: Option<String>,
 
     // repeat state
     last_keycode: Option<KeyCode>,
@@ -32,6 +34,8 @@ pub struct TextBox {
     last_repeat_count: u32,
     min_repeat_interval: f32,
     acceleration: f32,
+    
+    history: Vec<&'static str>
 }
 
 impl TextBox {
@@ -41,7 +45,7 @@ impl TextBox {
             value: default_text,
             caret: 0,
             caret_changed: false,
-
+            
             hovered: false,
             pressed: false,
             editing: false,
@@ -49,6 +53,8 @@ impl TextBox {
             selection_start: -1,
             selection_end: -1,
             text_hover: None,
+            dragging: None,
+            clipboard_queue: None,
 
             last_keycode: None,
             last_char: None,
@@ -59,6 +65,27 @@ impl TextBox {
             last_repeat_count: 0,
             min_repeat_interval: 0.01,
             acceleration: 0.85,
+            
+            history: vec![]
+        }
+    }
+
+    fn get_text_hover(&mut self, info: &mut UpdateInfo, font: Option<&Font>, label_width: f32, vertical_height: f32, char_dim: TextDimensions) {
+        self.text_hover = None;
+        for i in (0..self.value.len()).rev() {
+            let text_hover_width = measure_text(&self.value[0..i + 1], font, 14, 1.0);
+            let rect = Rect::new(
+                label_width + info.rect.x,
+                info.rect.y + vertical_height,
+                text_hover_width.width + 0.5,
+                char_dim.height + 10.0,
+            );
+            
+            if !rect.contains(info.mouse) {
+                break;
+            }
+            
+            self.text_hover = Some(i)
         }
     }
 }
@@ -190,6 +217,17 @@ impl Widget for TextBox {
 
     fn update(&mut self, info: &mut UpdateInfo) -> Option<Vec2> {
         let mut clipboard = Clipboard::new().unwrap();
+        if let Ok(s) = clipboard.get_text() {
+            if let Some(text) = &self.clipboard_queue {
+                if text == &s {
+                    self.clipboard_queue = None;
+                }
+            }
+        }
+        if let Some(text) = &self.clipboard_queue {
+            clipboard.set_text(text).unwrap();
+        }
+        
         let dt = get_frame_time();
 
         let font = info.font.into();
@@ -214,7 +252,7 @@ impl Widget for TextBox {
 
         let size = Some(vec2(rect.w + label_width, rect.h));
 
-        if !info.mouse_action.taken && rect.contains(mouse_position().into()) {
+        if !info.mouse_action.taken && info.hover && rect.contains(mouse_position().into()) {
             self.hovered = true;
             set_mouse_cursor(CursorIcon::Text);
         } else {
@@ -226,9 +264,26 @@ impl Widget for TextBox {
         }
 
         let old_caret = self.caret;
+        
+        if is_mouse_button_down(Left) && self.dragging.is_some() {
+            let drag_start = self.dragging.unwrap();
+            
+            self.get_text_hover(info, font, label_width, vertical_height, char_dim);
+            if let Some(drag_end) = self.text_hover {
+                if drag_start != drag_end {
+                    self.selection_start = drag_start.min(drag_end) as i32;
+                    self.selection_end = drag_start.max(drag_end) as i32;
+                    self.caret = drag_end;
+                }
+            } else if self.selection_start > -1 {
+                self.selection_end = self.value.len() as i32;
+            }
+        } else {
+            self.dragging = None;
+        }
 
         self.pressed = false;
-        if !info.mouse_action.taken && is_mouse_button_pressed(Left) {
+        if !info.mouse_action.taken && is_mouse_button_pressed(Left) && info.hover {
             if self.hovered {
                 self.pressed = true;
 				
@@ -238,40 +293,27 @@ impl Widget for TextBox {
 					self.caret = self.value.len();
 					self.editing = true;
 				} else {
-					self.text_hover = None;
-					if is_mouse_button_pressed(Left) {
-						for i in (0..self.value.len()).rev() {
-							let text_hover_width = measure_text(&self.value[0..i + 1], font, 14, 1.0);
-							let rect = Rect::new(
-								label_width + info.rect.x,
-								info.rect.y + vertical_height,
-								text_hover_width.width + 0.5,
-								char_dim.height + 10.0,
-							);
-							
-							if !rect.contains(info.mouse) {
-								break;
-							}
-							
-							self.text_hover = Some(i)
-						}
-					}
+                    self.get_text_hover(info, font, label_width, vertical_height, char_dim);
 					if let Some(t) = self.text_hover {
+                        self.dragging = self.text_hover;
 						self.caret = t;
 						self.selection_start = -1;
 						self.selection_end = -1;
 					} else {
+                        self.dragging = Some(self.value.len());
 						self.caret = self.value.len();
+                        self.selection_start = -1;
+                        self.selection_end = -1;
 					}
 				}
             } else {
                 self.editing = false;
             }
+        } else if is_mouse_button_pressed(Left) {
+            self.editing = false;
         }
-
-        if self.editing {
-            info.mouse_action.taken = true;
-        } else {
+        
+        if !self.editing {
             self.last_keycode = None;
             self.last_char = None;
             self.key_repeat_timer = 0.0;
@@ -288,20 +330,36 @@ impl Widget for TextBox {
 
             if is_key_pressed(KeyCode::V) {
                 if let Ok(text) = clipboard.get_text() {
-                    println!("paste: {text}");
-
                     self.value.insert_str(self.caret, &text);
                     self.caret += text.len();
                 }
             }
-
+            
             if is_key_pressed(KeyCode::C) {
                 if self.selection_start >= 0 && self.selection_end >= 0 {
                     let start = self.selection_start.min(self.selection_end) as usize;
                     let end = self.selection_start.max(self.selection_end) as usize;
                     let text = &self.value[start..end];
-
-                    clipboard.set_text(text).unwrap();
+                    
+                    self.clipboard_queue = Some(text.to_string());
+                }
+            }
+            
+            if is_key_pressed(KeyCode::X) {
+                if self.selection_start >= 0 && self.selection_end >= 0 {
+                    let start = self.selection_start.min(self.selection_end) as usize;
+                    let end = self.selection_start.max(self.selection_end) as usize;
+                    
+                    let text = &self.value[start..end];
+                    self.clipboard_queue = Some(text.to_string());
+                    
+                    let mut new_value = String::from(&self.value[0..start]);
+                    new_value.push_str(&self.value[end..]);
+                    self.value = new_value;
+                    
+                    self.caret = self.selection_start as usize;
+                    self.selection_start = -1;
+                    self.selection_end = -1;
                 }
             }
 
@@ -552,7 +610,7 @@ impl Widget for TextBox {
         } else {
             self.caret_changed = false;
         }
-
+        
         size
     }
 }
