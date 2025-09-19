@@ -35,7 +35,7 @@ pub struct TextBox {
     min_repeat_interval: f32,
     acceleration: f32,
     
-    history: Vec<&'static str>
+    history: Vec<String>
 }
 
 impl TextBox {
@@ -101,7 +101,7 @@ impl Widget for TextBox {
     fn render(&self, info: &mut RenderInfo) -> Option<Vec2> {
         let font = info.font.into();
         let char_dim = measure_text("A", font, 14, 1.0);
-        let caret_dim = measure_text(&self.value[0..self.caret], font, 14, 1.0);
+        let caret_dim = measure_text(&self.value[0..self.caret.min(self.value.len())], font, 14, 1.0);
         let text_dim = measure_text(&self.value, font, 14, 1.0);
 
         let label_width = match &self.label {
@@ -228,6 +228,7 @@ impl Widget for TextBox {
             clipboard.set_text(text).unwrap();
         }
         
+        let old_text = self.value.clone();
         let dt = get_frame_time();
 
         let font = info.font.into();
@@ -363,6 +364,17 @@ impl Widget for TextBox {
                 }
             }
 
+            if is_key_pressed(KeyCode::Z) {
+                if !self.history.is_empty() {
+                    self.value = self.history.last().unwrap().clone();
+                    self.history.pop();
+                }
+                return size;
+            }
+            
+            if self.value != old_text {
+                self.history.push(old_text.to_string());
+            }
             return size;
         }
 
@@ -397,7 +409,11 @@ impl Widget for TextBox {
             self.key_repeat_timer = self.repeat_delay;
 
             self.caret = self.caret.clamp(0, self.value.len());
-
+            
+            if self.value != old_text {
+                self.history.push(old_text.to_string());
+            }
+            
             return size;
         }
 
@@ -496,6 +512,10 @@ impl Widget for TextBox {
                 self.last_keycode = get_last_key_pressed();
                 self.last_repeat_count = 0;
                 self.key_repeat_timer = self.repeat_delay;
+            }
+            
+            if self.value != old_text {
+                self.history.push(old_text.to_string());
             }
             return size;
         }
@@ -609,6 +629,10 @@ impl Widget for TextBox {
             self.caret_changed = true;
         } else {
             self.caret_changed = false;
+        }
+        
+        if self.value != old_text {
+            self.history.push(old_text.to_string());
         }
         
         size
