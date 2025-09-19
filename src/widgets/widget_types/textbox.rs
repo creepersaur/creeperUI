@@ -331,7 +331,7 @@ impl Widget for TextBox {
 
             if is_key_pressed(KeyCode::V) {
                 if let Ok(text) = clipboard.get_text() {
-                    self.value.insert_str(self.caret, &text);
+                    self.value.insert_str(self.caret.min(self.value.len()), &text);
                     self.caret += text.len();
                 }
             }
@@ -379,35 +379,47 @@ impl Widget for TextBox {
         }
 
         // --- immediate press handling ---
-        if is_key_pressed(KeyCode::Backspace) {
+        if is_key_pressed(KeyCode::Backspace) || is_key_pressed(KeyCode::Delete) {
+            let key = match is_key_pressed(KeyCode::Delete) {
+                true => "delete",
+                _ => "backspace"
+            };
+            
             if !self.value.is_empty() {
                 if self.selection_start > -1 {
                     let start = self.selection_start.min(self.selection_end);
                     let end = self.selection_start.max(self.selection_end);
-
+                    
                     for _ in start..end {
                         if self.value.len() > 0 {
                             self.value.remove(start as usize);
                         }
                     }
-
+                    
                     self.selection_start = -1;
                     self.selection_end = -1;
-                } else if self.caret > 0 {
-                    self.value.remove(self.caret - 1);
-                    self.caret = (self.caret as i32 - 1).max(0) as usize;
+                } else {
+                    if key == "delete" && self.value.len() > self.caret {
+                        self.value.remove(self.caret);
+                    } else if self.caret > 0 {
+                        self.value.remove(self.caret - 1);
+                        self.caret = (self.caret as i32 - 1).max(0) as usize;
+                    }
                 }
             }
-
+            
             if self.selection_start == self.selection_end {
                 self.selection_start = -1;
             }
-
-            self.last_keycode = Some(KeyCode::Backspace);
+            
+            self.last_keycode = Some(match key {
+                "delete" => KeyCode::Delete,
+                _ => KeyCode::Backspace
+            });
             self.last_char = None;
             self.last_repeat_count = 0;
             self.key_repeat_timer = self.repeat_delay;
-
+            
             self.caret = self.caret.clamp(0, self.value.len());
             
             if self.value != old_text {
@@ -531,6 +543,12 @@ impl Widget for TextBox {
                             if !self.value.is_empty() && self.caret > 0 {
                                 self.value.remove(self.caret - 1);
                                 self.caret = (self.caret as i32 - 1).max(0) as usize;
+                            }
+                        }
+                        
+                        KeyCode::Delete => {
+                            if !self.value.is_empty() && self.value.len() > self.caret {
+                                self.value.remove(self.caret);
                             }
                         }
 
