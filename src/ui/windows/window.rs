@@ -1,3 +1,4 @@
+use crate::misc::rounded_rect::{draw_rounded_rect_ex, draw_rounded_rect_stroke};
 use crate::text_ex::TextEx;
 use crate::ui::mouse_action::{MouseAction, WidgetAction};
 use crate::ui::windows::win_resize_handles::WindowResizeHandles;
@@ -10,7 +11,6 @@ use macroquad::input::MouseButton::Left;
 use macroquad::prelude::*;
 use std::collections::HashMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
-use crate::misc::rounded_rect::{draw_rounded_rect_ex, draw_rounded_rect_stroke};
 
 pub struct Window {
     pub id: WindowId,
@@ -184,7 +184,7 @@ impl Window {
         //     self.rect.h,
         //     self.theme.background,
         // );
-        
+
         draw_rounded_rect_stroke(
             self.rect.x,
             self.rect.y,
@@ -212,7 +212,7 @@ impl Window {
         if !self.info.scroll_hovered && !self.info.scroll_pressed.is_some() {
             self.draw_resize_handles();
         }
-        
+
         if let Some(target) = &self.render_targets.target_3 {
             draw_texture_ex(
                 &target.texture,
@@ -229,7 +229,7 @@ impl Window {
 
     pub fn start_widget_render(&self) {
         let scale = 0.01;
-        
+
         let title_thickness = match self.info.show_titlebar {
             false => 0.0,
             _ => 30.0,
@@ -238,7 +238,7 @@ impl Window {
             scale / self.rect.w * 200.0,
             scale / (self.rect.h - title_thickness) * 200.0,
         );
-        
+
         let cam_1 = &Camera2D {
             zoom: vec2(zoom_x, zoom_y),
             target: vec2(1.0 / zoom_x, 1.0 / zoom_y),
@@ -288,10 +288,10 @@ impl Window {
                 vertical_offset,
                 [&cam_1, &cam_2, &cam_3],
             );
-            
+
             vertical_offset += rect_h + self.theme.holder_padding;
         }
-        
+
         set_default_camera();
 
         if let Some(target) = &self.render_targets.target_1 {
@@ -468,13 +468,13 @@ impl Window {
             mouse_action.taken = true;
             scroll_hov = true;
         }
-        
+
         let mut widget_action = WidgetAction::new();
         let mut vertical_offset = -self.theme.holder_padding;
-        
+
         if window_action {
             let new_rect = self.rect.clone();
-            
+
             for i in self.holder_ids.iter() {
                 let holder = self.widget_holders.get_mut(i).unwrap();
 
@@ -488,12 +488,12 @@ impl Window {
                     &self.theme.font,
                     &mut mouse_action,
                 );
-                
+
                 widget_action = action;
                 vertical_offset += holder_rect.h + self.theme.holder_padding;
             }
         }
-        
+
         if widget_action.taken && !scroll_hov {
             self.taken = true;
         } else {
@@ -522,7 +522,7 @@ impl Window {
         } else if self.resizing {
             self.clamp();
         }
-        
+
         self.rect.x = self.rect.x.floor();
         self.rect.y = self.rect.y.floor();
 
@@ -729,8 +729,11 @@ impl Window {
             .as_ref()
             .map(|t| t.texture.width() as u32 != win_w || t.texture.height() as u32 != win_h)
             .unwrap_or(true);
-        
-        let update_3 = self.render_targets.target_3.as_ref()
+
+        let update_3 = self
+            .render_targets
+            .target_3
+            .as_ref()
             .map(|t| t.texture.width() as u32 != screen_w || t.texture.height() as u32 != screen_h)
             .unwrap_or(true);
 
@@ -751,7 +754,7 @@ impl Window {
                 .texture
                 .set_filter(FilterMode::Nearest);
         }
-        
+
         if update_3 {
             self.render_targets.target_3 = Some(render_target(screen_w, screen_h));
             self.render_targets
@@ -940,7 +943,7 @@ impl Window {
     // WIDGET TYPES
 
     pub fn text(&mut self, label: impl ToString) -> &mut Text {
-        let id = self.generate_widget_id("text");
+        let id = self.generate_widget_id("Text");
         self.last_widget_holder().text(id.into(), label.to_string())
     }
 
@@ -954,6 +957,12 @@ impl Window {
         let id = self.generate_widget_id("text_ex");
         self.last_widget_holder()
             .text_ex(id.into(), label.to_string(), color, font_size, font)
+    }
+
+    pub fn text_colored(&mut self, label: impl ToString, color: Color) -> &mut TextEx {
+        let id = self.generate_widget_id("text_ex");
+        self.last_widget_holder()
+            .text_ex(id.into(), label.to_string(), color, 14, None)
     }
 
     pub fn button(&mut self, id: impl Into<WidgetId>, label: impl ToString) -> &mut Button {
@@ -1017,6 +1026,23 @@ impl Window {
 
         self.last_widget_holder()
             .dropdown(id.into(), stringed_items, stringed_value)
+    }
+
+    pub fn radio_buttons(
+        &mut self,
+        id: impl Into<WidgetId>,
+        options: Vec<impl ToString>,
+        default_value: impl ToString,
+    ) -> &mut RadioButtons {
+        let stringed_options: Vec<_> = options.iter().map(|x| x.to_string()).collect();
+        let stringed_value = default_value.to_string();
+
+        if !stringed_options.contains(&stringed_value) {
+            println!("{stringed_value} not found in options [RadioButtons].")
+        }
+
+        self.last_widget_holder()
+            .radio_buttons(id.into(), stringed_options, stringed_value)
     }
 
     pub fn separator(&mut self) -> &mut Separator {

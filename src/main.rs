@@ -7,11 +7,12 @@ async fn main() {
 
     loop {
         ui.begin("login window").scope(|win| {
-            win.same_line((), |win| {
-                win.button((), "hello");
-                win.textbox((), "hello");
-                win.button((), "hello");
-            });
+            win.button((), "Sigma");
+            win.radio_buttons((), vec![
+                "Hello",
+                "World"
+            ], "Hello");
+            win.button((), "Sigma");
         });
 
         ui.draw();

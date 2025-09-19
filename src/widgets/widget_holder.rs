@@ -29,9 +29,9 @@ pub struct UpdateInfo<'a> {
 
 #[derive(Clone, Default)]
 pub struct GlobalRenderTargets {
-	pub target_1: Option<RenderTarget>,
-	pub target_2: Option<RenderTarget>,
-	pub target_3: Option<RenderTarget>,
+    pub target_1: Option<RenderTarget>,
+    pub target_2: Option<RenderTarget>,
+    pub target_3: Option<RenderTarget>,
 }
 
 pub type WidgetIdNum = u64;
@@ -39,7 +39,7 @@ pub type WidgetIdNum = u64;
 pub struct WidgetHolder {
     pub same_line: bool,
     pub(crate) widgets: HashMap<WidgetIdNum, Box<dyn Widget>>,
-    pub(crate) frame_ids: IndexSet<WidgetIdNum>
+    pub(crate) frame_ids: IndexSet<WidgetIdNum>,
 }
 
 impl WidgetHolder {
@@ -58,7 +58,7 @@ impl WidgetHolder {
     pub fn retain(&mut self) {
         self.widgets.retain(|k, _| self.frame_ids.contains(k));
     }
-    
+
     pub fn render<'a>(
         &self,
         rect: &Rect,
@@ -68,12 +68,12 @@ impl WidgetHolder {
         cameras: [&Camera2D; 3],
     ) -> f32 {
         let [cam_1, cam_2, cam_3] = cameras;
-        
+
         let mut holder_rect = Rect::new(0.0, -scroll_y + vertical_offset, 0.0, 0.0);
-        
+
         for i in self.frame_ids.iter() {
             set_camera(cam_1);
-            
+
             let mut info = RenderInfo {
                 rect: holder_rect,
                 win_rect: *rect,
@@ -83,27 +83,27 @@ impl WidgetHolder {
                 cam_2,
                 cam_3,
             };
-            
+
             let widget_size = self.widgets.get(i).unwrap().render(&mut info);
-            
+
             if let Some(size) = widget_size {
                 if self.same_line {
                     let padding = 5.0;
                     holder_rect.x += size.x + padding;
-                    
-                    if size.y > holder_rect.h  {
+
+                    if size.y > holder_rect.h {
                         holder_rect.h = size.y
                     }
                 } else {
                     holder_rect.h += size.y + 5.0;
-                    
+
                     if size.x > holder_rect.w {
                         holder_rect.w = size.x
                     }
                 }
             }
         }
-        
+
         holder_rect.h
     }
 
@@ -141,18 +141,18 @@ impl WidgetHolder {
             };
 
             let widget_size = self.widgets.get_mut(i).unwrap().update(&mut info);
-            
+
             if let Some(size) = widget_size {
                 if self.same_line {
                     let padding = 5.0;
                     holder_rect.x += size.x + padding;
-                    
-                    if size.y > holder_rect.h  {
+
+                    if size.y > holder_rect.h {
                         holder_rect.h = size.y
                     }
                 } else {
                     holder_rect.h += size.y + 5.0;
-                    
+
                     if size.x > holder_rect.w {
                         holder_rect.w = size.x
                     }
@@ -320,7 +320,7 @@ impl WidgetHolder {
         b.text = label;
         b
     }
-
+    
     pub fn dropdown(
         &mut self,
         id: WidgetId,
@@ -328,16 +328,43 @@ impl WidgetHolder {
         default_value: String,
     ) -> &mut Dropdown {
         let label = items.join("|");
-        let new_id = create_widget_id("Button", &self.frame_ids, id, &label);
-
+        let new_id = create_widget_id("Dropdown", &self.frame_ids, id, &label);
+        
         if !self.widgets.contains_key(&new_id) {
             let w = Dropdown::new(items, default_value);
             self.widgets.insert(new_id, Box::new(w));
         }
         self.frame_ids.insert(new_id);
-
+        
         // UPDATE STATE
         let b: &mut Dropdown = self
+            .widgets
+            .get_mut(&new_id)
+            .unwrap()
+            .as_any_mut()
+            .downcast_mut()
+            .unwrap();
+        // b.value = label;
+        b
+    }
+    
+    pub fn radio_buttons(
+        &mut self,
+        id: WidgetId,
+        options: Vec<String>,
+        default_value: String,
+    ) -> &mut RadioButtons {
+        let label = options.join("|");
+        let new_id = create_widget_id("RadioButtons", &self.frame_ids, id, &label);
+        
+        if !self.widgets.contains_key(&new_id) {
+            let w = RadioButtons::new(options, default_value);
+            self.widgets.insert(new_id, Box::new(w));
+        }
+        self.frame_ids.insert(new_id);
+        
+        // UPDATE STATE
+        let b: &mut RadioButtons = self
             .widgets
             .get_mut(&new_id)
             .unwrap()
@@ -447,17 +474,17 @@ impl WidgetHolder {
             .unwrap();
         b
     }
-    
+
     pub fn labeled_textbox(&mut self, id: WidgetId, label: String, text: String) -> &mut TextBox {
         let unique = &self.frame_ids.len().to_string();
         let new_id = create_widget_id(&format!("LabeledTextBox:{unique}"), &self.frame_ids, id, "");
-        
+
         if !self.widgets.contains_key(&new_id) {
             let w = TextBox::new(text.clone(), Some(label));
             self.widgets.insert(new_id, Box::new(w));
         }
         self.frame_ids.insert(new_id);
-        
+
         // UPDATE STATE
         let b: &mut TextBox = self
             .widgets

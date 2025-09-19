@@ -9,6 +9,7 @@ mod tab_holder;
 pub mod text;
 pub mod text_ex;
 mod textbox;
+mod radio_buttons;
 
 pub use text::Text;
 pub use button::Button;
@@ -20,3 +21,4 @@ pub use separator::Separator;
 pub use slider::{Slider, SliderInfo};
 pub use tab_holder::TabHolder;
 pub use textbox::TextBox;
+pub use radio_buttons::RadioButtons;

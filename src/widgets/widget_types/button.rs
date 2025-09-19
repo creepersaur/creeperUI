@@ -74,7 +74,7 @@ impl Widget for Button {
         if self.pressed {
             draw_rounded_rect_stroke(
                 info.rect.x,
-                info.rect.y + vertical_height,
+                info.rect.y + vertical_height + 5.0,
                 text_dim.width + 10.0,
                 text_dim.height + 10.0,
                 3.0,
@@ -89,7 +89,7 @@ impl Widget for Button {
         } else {
             draw_rounded_rect(
                 info.rect.x,
-                info.rect.y + vertical_height,
+                info.rect.y + vertical_height + 5.0,
                 text_dim.width + 10.0,
                 text_dim.height + 10.0,
                 3.0,
@@ -105,7 +105,7 @@ impl Widget for Button {
             draw_text_ex(
                 &self.value.to_string(),
                 info.rect.x + 5.0,
-                info.rect.y + text_dim.height + 5.0 + vertical_height,
+                info.rect.y + text_dim.height + 7.0 + vertical_height,
                 TextParams {
                     font: match &info.font {
                         Some(f) => Some(&f),
@@ -139,7 +139,7 @@ impl Widget for Button {
 
         let rect = Rect::new(
             info.rect.x,
-            info.rect.y + vertical_height,
+            info.rect.y + vertical_height + 5.0,
             text_dim.width + 10.0,
             text_dim.height + 10.0,
         );
