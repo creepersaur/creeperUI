@@ -274,14 +274,17 @@ impl Window {
         clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
 
         // DRAW TOP-LAYER OF WIDGETS
-        let new_rect = self.rect.clone();
+        let mut new_rect = self.rect.clone();
+        new_rect.x *= 0.0;
+        new_rect.y *= 0.0;
+        
         let mut vertical_offset = 0.0;
 
         for i in self.holder_ids.iter() {
             set_camera(cam_1);
             let holder = self.widget_holders.get(i).unwrap();
 
-            let rect_h = holder.render(
+            let (_, rect_h) = holder.render(
                 &new_rect,
                 self.scroll_y,
                 &self.theme.font,
@@ -658,7 +661,10 @@ impl Window {
         } else if wheel.0 != 0.0 {
             self.scroll_y += wheel.0;
         }
-        self.max_scroll_y = (vertical_offset - self.rect.h + self.theme.title_thickness + self.theme.holder_padding).max(0.0);
+        self.max_scroll_y = (vertical_offset - self.rect.h
+            + self.theme.title_thickness
+            + self.theme.holder_padding)
+            .max(0.0);
         self.scroll_y = self.scroll_y.clamp(0.0, self.max_scroll_y);
 
         //////////////////////////////////////////
@@ -816,7 +822,8 @@ impl Window {
         id: impl Into<WidgetId>,
         same_line: bool,
     ) -> &mut WidgetHolder {
-        let id_string = id.into().to_string();
+        let id_string = self.generate_widget_id(&id.into().to_string());
+
         self.holder_ids.insert(id_string.clone()); // Ensure order
         self.widget_holders
             .entry(id_string)
@@ -1082,5 +1089,9 @@ impl Window {
             label.to_string(),
             default_text.to_string(),
         )
+    }
+
+    pub fn column(&mut self, id: impl Into<WidgetId>, f: impl FnMut(&mut Column) + 'static) -> &mut Column {
+        self.last_widget_holder().column(id.into(), f)
     }
 }

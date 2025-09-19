@@ -88,7 +88,7 @@ impl Widget for RadioButtons {
 
             draw_circle(
                 info.rect.x + 10.0,
-                info.rect.y + vertical_height - 2.0 + text_y - self.padding,
+                info.rect.y + vertical_height - 8.0 + text_y - self.padding,
                 8.0,
                 match (hovered, pressed) {
                     (true, false) => Color::new(0.22, 0.35, 0.55, 0.9),
@@ -100,7 +100,7 @@ impl Widget for RadioButtons {
             if self.value == *text {
                 draw_circle(
                     info.rect.x + 10.0,
-                    info.rect.y + vertical_height - 2.0 + text_y - self.padding,
+                    info.rect.y + vertical_height - 8.0 + text_y - self.padding,
                     5.0,
                     Color::new(0.3, 0.6, 0.9, 1.0),
                 );
@@ -112,7 +112,7 @@ impl Widget for RadioButtons {
                 draw_text_ex(
                     text,
                     info.rect.x + text_dim.height + 10.0,
-                    info.rect.y + vertical_height + 2.0 + text_y - self.padding,
+                    info.rect.y + vertical_height + text_y - self.padding - 3.0,
                     TextParams {
                         font: match &info.font {
                             Some(f) => Some(&f),

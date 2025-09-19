@@ -105,7 +105,7 @@ impl Widget for Button {
             draw_text_ex(
                 &self.value.to_string(),
                 info.rect.x + 5.0,
-                info.rect.y + text_dim.height + 7.0 + vertical_height,
+                info.rect.y + text_dim.height * 2.0 + vertical_height - 3.0,
                 TextParams {
                     font: match &info.font {
                         Some(f) => Some(&f),

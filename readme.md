@@ -108,6 +108,10 @@ win.text_ex("Label", color, font_size, Option<Font>)
 // use the `.value` property to check if it's checked
 win.checkbox(id, "Label", checked);
 
+// `default_value` is the default value
+// use the `.value` property to get the current value
+win.radio_buttons(id, vec!["option1", "option2"], default_value);
+
 // size is an Option<Vec2> from macroquad
 // images need to be loaded, so you must `await`
 win.image(id, "path_to_image.png", size).await;
@@ -188,27 +192,27 @@ return the window.
 let win = ui.begin("");
 
 // takes a closure with `win` parameter that doesn't return anything
-win.scope(|win| {
-    win.text("Hello World");
+win.scope(|scope| {
+    scope.text("Hello World");
 });
 
 // only runs when a *condition* is met (can be converted to boolean)
 // and takes a closure with `win` parameter that doesn't return anything
-win.scope_if( CONDITION, |win| {
-    win.text("Hello World");
+win.scope_if( CONDITION, |scope| {
+    scope.text("Hello World");
 });
 
 // takes a async-closure with `win` parameter that doesn't return anything
 // call `.await` on it or it won't work
-win.scope_async( async |win| {
-    win.text("Hello World");
+win.scope_async( async |scope| {
+    scope.text("Hello World");
 }).await;
 
 // only runs when a *condition* is met (can be converted to boolean)
 // takes a async-closure with `win` parameter that doesn't return anything
 // call `.await` on it or it won't work
-win.scope_async_if( CONDITION, await |win| {
-    win.text("Hello World");
+win.scope_async_if( CONDITION, await |scope| {
+scope.text("Hello World");
 }).await;
 ```
 
@@ -220,9 +224,26 @@ Call the `win.same_line` method which takes a widget id and a closure. Like scop
 derivatives such as `same_line_if`, `same_line_async`, and `same_line_async_if`.
 
 ```rust
-win.same_line(gen_id!(), |win| {
-    win.text("Theres a button on the right");
-    win.button((), "Click me");
+win.same_line(gen_id!(), |line| {
+    line.text("Theres a button on the right");
+    line.button((), "Click me");
+});
+```
+
+At the end of the closure, the window will switch back to regular vertical widgets.
+
+---
+
+# Putting widgets in the same column
+
+Call the `win.column` method **INSIDE A SAMELINE** which takes a widget id and a closure.
+This adds widgets to a column inside a same line. Good for things like tables or 2D spaced widgets.
+
+```rust
+win.column(gen_id!(), |col| {
+    col.button((), "We are all in the same column");
+    col.button((), "We are all in the same column");
+    col.button((), "We are all in the same column");
 });
 ```
 

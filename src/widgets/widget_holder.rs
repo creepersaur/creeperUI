@@ -6,6 +6,7 @@ use macroquad::math::u16;
 use macroquad::prelude::*;
 use std::collections::HashMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
+use crate::Window;
 
 pub struct RenderInfo<'a> {
     pub rect: Rect,
@@ -66,10 +67,10 @@ impl WidgetHolder {
         font: &Option<Font>,
         vertical_offset: f32,
         cameras: [&Camera2D; 3],
-    ) -> f32 {
+    ) -> (f32, f32) {
         let [cam_1, cam_2, cam_3] = cameras;
 
-        let mut holder_rect = Rect::new(0.0, -scroll_y + vertical_offset, 0.0, 0.0);
+        let mut holder_rect = Rect::new(rect.x, rect.y - scroll_y + vertical_offset, 0.0, 0.0);
 
         for i in self.frame_ids.iter() {
             set_camera(cam_1);
@@ -104,7 +105,7 @@ impl WidgetHolder {
             }
         }
 
-        holder_rect.h
+        (holder_rect.w, holder_rect.h)
     }
 
     pub fn update(
@@ -123,8 +124,8 @@ impl WidgetHolder {
             _ => 30.0,
         };
         let mut holder_rect = Rect::new(
-            rect.x + 5.0,
-            rect.y + 5.0 + title_thickness - scroll_y + vertical_offset,
+            rect.x,
+            rect.y + title_thickness - scroll_y + vertical_offset,
             0.0,
             0.0,
         );
@@ -320,7 +321,7 @@ impl WidgetHolder {
         b.text = label;
         b
     }
-    
+
     pub fn dropdown(
         &mut self,
         id: WidgetId,
@@ -329,13 +330,13 @@ impl WidgetHolder {
     ) -> &mut Dropdown {
         let label = items.join("|");
         let new_id = create_widget_id("Dropdown", &self.frame_ids, id, &label);
-        
+
         if !self.widgets.contains_key(&new_id) {
             let w = Dropdown::new(items, default_value);
             self.widgets.insert(new_id, Box::new(w));
         }
         self.frame_ids.insert(new_id);
-        
+
         // UPDATE STATE
         let b: &mut Dropdown = self
             .widgets
@@ -347,7 +348,7 @@ impl WidgetHolder {
         // b.value = label;
         b
     }
-    
+
     pub fn radio_buttons(
         &mut self,
         id: WidgetId,
@@ -356,13 +357,13 @@ impl WidgetHolder {
     ) -> &mut RadioButtons {
         let label = options.join("|");
         let new_id = create_widget_id("RadioButtons", &self.frame_ids, id, &label);
-        
+
         if !self.widgets.contains_key(&new_id) {
             let w = RadioButtons::new(options, default_value);
             self.widgets.insert(new_id, Box::new(w));
         }
         self.frame_ids.insert(new_id);
-        
+
         // UPDATE STATE
         let b: &mut RadioButtons = self
             .widgets
@@ -474,19 +475,39 @@ impl WidgetHolder {
             .unwrap();
         b
     }
-
+    
     pub fn labeled_textbox(&mut self, id: WidgetId, label: String, text: String) -> &mut TextBox {
         let unique = &self.frame_ids.len().to_string();
         let new_id = create_widget_id(&format!("LabeledTextBox:{unique}"), &self.frame_ids, id, "");
-
+        
         if !self.widgets.contains_key(&new_id) {
             let w = TextBox::new(text.clone(), Some(label));
             self.widgets.insert(new_id, Box::new(w));
         }
         self.frame_ids.insert(new_id);
-
+        
         // UPDATE STATE
         let b: &mut TextBox = self
+            .widgets
+            .get_mut(&new_id)
+            .unwrap()
+            .as_any_mut()
+            .downcast_mut()
+            .unwrap();
+        b
+    }
+    
+    pub fn column(&mut self, id: WidgetId, f: impl FnMut(&mut Column) + 'static) -> &mut Column {
+        let new_id = create_widget_id("Column", &self.frame_ids, id, "");
+        
+        if !self.widgets.contains_key(&new_id) {
+            let w = Column::new(f);
+            self.widgets.insert(new_id, Box::new(w));
+        }
+        self.frame_ids.insert(new_id);
+        
+        // UPDATE STATE
+        let b: &mut Column = self
             .widgets
             .get_mut(&new_id)
             .unwrap()

@@ -8,13 +8,12 @@ async fn main() {
     loop {
         ui.begin("login window").scope(|win| {
             win.text_colored("Important options below choose wisely:", YELLOW);
-            win.radio_buttons((), vec![
-                "Easy",
-                "Medium",
-                "Hard",
-                "Emotional Damage",
-            ], "Easy");
-            win.button("Sigma");
+            
+            win.same_line((), |win| {
+                win.button("Start").set_background(DARKGREEN);
+                win.button("Pause");
+                win.button("Quit").set_background(MAROON);
+            });
         });
 
         ui.draw();

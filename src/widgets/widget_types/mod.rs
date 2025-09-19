@@ -10,6 +10,7 @@ pub mod text;
 pub mod text_ex;
 mod textbox;
 mod radio_buttons;
+mod column;
 
 pub use text::Text;
 pub use button::Button;
@@ -22,3 +23,4 @@ pub use slider::{Slider, SliderInfo};
 pub use tab_holder::TabHolder;
 pub use textbox::TextBox;
 pub use radio_buttons::RadioButtons;
+pub use column::Column;
