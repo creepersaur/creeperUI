@@ -658,7 +658,7 @@ impl Window {
         } else if wheel.0 != 0.0 {
             self.scroll_y += wheel.0;
         }
-        self.max_scroll_y = (vertical_offset - self.rect.h + self.theme.title_thickness).max(0.0);
+        self.max_scroll_y = (vertical_offset - self.rect.h + self.theme.title_thickness + self.theme.holder_padding).max(0.0);
         self.scroll_y = self.scroll_y.clamp(0.0, self.max_scroll_y);
 
         //////////////////////////////////////////
@@ -965,9 +965,9 @@ impl Window {
             .text_ex(id.into(), label.to_string(), color, 14, None)
     }
 
-    pub fn button(&mut self, id: impl Into<WidgetId>, label: impl ToString) -> &mut Button {
+    pub fn button(&mut self, label: impl ToString) -> &mut Button {
         self.last_widget_holder()
-            .button(id.into(), label.to_string())
+            .button(().into(), label.to_string())
     }
 
     pub fn checkbox(
